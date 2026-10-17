@@ -20,6 +20,18 @@ from . import notify
 
 EXTERNAL_KINDS = ("publish_action", "reconcile_action")  # paused => not leased
 
+_LEASE = """
+    UPDATE jobs SET status='leased', lease_owner=:w, lease_expires_at=:exp, attempts=attempts+1, updated_at=:now
+    WHERE id = (
+        SELECT id FROM jobs
+        WHERE ((status='queued' AND run_after <= :now) OR (status='leased' AND lease_expires_at < :wall)) {extra}
+        ORDER BY priority, run_after, id LIMIT 1
+    ) RETURNING id
+"""
+_TYPES = (bindparam("exp", type_=DateTime), bindparam("now", type_=DateTime), bindparam("wall", type_=DateTime))
+LEASE_SQL = text(_LEASE.format(extra="")).bindparams(*_TYPES)
+LEASE_SQL_PAUSED = text(_LEASE.format(extra="AND kind NOT IN ('publish_action','reconcile_action')")).bindparams(*_TYPES)
+
 
 def enqueue(
     session: Session,
@@ -48,16 +60,8 @@ def lease(session: Session, worker_id: str, lease_s: int) -> Job | None:
     now = clock.now()
     wall = clock.wall_now()
     paused = bool(kv.get(session, "paused"))
-    excluded = "AND kind NOT IN ('publish_action','reconcile_action')" if paused else ""
-    row = session.execute(text(f"""
-        UPDATE jobs SET status='leased', lease_owner=:w, lease_expires_at=:exp, attempts=attempts+1, updated_at=:now
-        WHERE id = (
-            SELECT id FROM jobs
-            WHERE ((status='queued' AND run_after <= :now) OR (status='leased' AND lease_expires_at < :wall)) {excluded}
-            ORDER BY priority, run_after, id LIMIT 1
-        ) RETURNING id
-    """).bindparams(bindparam("exp", type_=DateTime), bindparam("now", type_=DateTime), bindparam("wall", type_=DateTime)),
-        {"w": worker_id, "exp": wall + timedelta(seconds=lease_s), "now": now, "wall": wall}).fetchone()  # noqa: S608
+    sql = LEASE_SQL_PAUSED if paused else LEASE_SQL
+    row = session.execute(sql, {"w": worker_id, "exp": wall + timedelta(seconds=lease_s), "now": now, "wall": wall}).fetchone()
     session.commit()
     if row is None:
         return None

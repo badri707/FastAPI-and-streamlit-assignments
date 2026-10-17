@@ -23,3 +23,19 @@ dev = [
     "respx>=0.23.1",
     "ruff>=0.17.1",
 ]
+
+[tool.ruff]
+line-length = 140
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "SIM"]
+ignore = ["S101", "B008", "S311", "SIM105", "E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S", "B"]
+"migrations/*" = ["E", "W", "I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["ai: requires the local Ollama model (real inference)", "slow: long-running"]

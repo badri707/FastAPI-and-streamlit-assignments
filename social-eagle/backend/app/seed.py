@@ -12,23 +12,19 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from .connectors.simulator import OTHER_GROUP, SIM_GROUP, SIM_GROUP_NAME, SimulatorStore, _iso
 from .config import PROJECT_ROOT
+from .connectors.simulator import OTHER_GROUP, SIM_GROUP, SIM_GROUP_NAME, SimulatorStore, _iso
 
 SEED = 20260930
 # History ends at 2026-10-01 00:00 IST (= 2026-09-30 18:30 UTC); 90 days of history before it.
 ANCHOR = datetime(2026, 9, 30, 18, 30)
 HISTORY_DAYS = 90
+DEFAULT_MAIN_MEMBERS = 3200  # owner request: evaluate at the scale of a 3,000+ member community
 START = ANCHOR - timedelta(days=HISTORY_DAYS)
 LEVEL_THRESHOLDS = [0, 5, 20, 65, 155, 515, 2015, 8015, 33015]  # synthetic model of points→level
 
-FIRST = """Aarav Aditi Akash Ananya Anika Arjun Bhavna Chirag Deepa Dev Diya Farhan Gauri Harini Isha Ishaan
-Jai Kabir Kavya Kiran Lakshmi Madhav Meera Mohan Nandini Neha Nikhil Pooja Pranav Priya Rahul Riya Rohan Sahil
-Saanvi Sanjay Shreya Siddharth Sneha Tanvi Tara Uday Varun Vidya Yash Zoya Amelia Lucas Sofia Mateo Hana Kenji
-Leila Omar Grace Daniel Chloe Noah Ama Kwame Lin Wei Elena Marco""".split()
-LAST = """Sharma Iyer Nair Rao Mehta Kapoor Desai Reddy Pillai Menon Gupta Joshi Patel Bose Chatterjee Kulkarni
-Shetty Verma Singh Krishnan Subramanian Fernandes D'Souza Thomas Banerjee Malhotra Saxena Rajan Chandra
-Murthy Okafor Tanaka Rossi Haddad Mensah Chen Novak Silva Alvarez Kim""".split()
+FIRST = ["Aarav", "Aditi", "Akash", "Ananya", "Anika", "Arjun", "Bhavna", "Chirag", "Deepa", "Dev", "Diya", "Farhan", "Gauri", "Harini", "Isha", "Ishaan", "Jai", "Kabir", "Kavya", "Kiran", "Lakshmi", "Madhav", "Meera", "Mohan", "Nandini", "Neha", "Nikhil", "Pooja", "Pranav", "Priya", "Rahul", "Riya", "Rohan", "Sahil", "Saanvi", "Sanjay", "Shreya", "Siddharth", "Sneha", "Tanvi", "Tara", "Uday", "Varun", "Vidya", "Yash", "Zoya", "Amelia", "Lucas", "Sofia", "Mateo", "Hana", "Kenji", "Leila", "Omar", "Grace", "Daniel", "Chloe", "Noah", "Ama", "Kwame", "Lin", "Wei", "Elena", "Marco"]
+LAST = ["Sharma", "Iyer", "Nair", "Rao", "Mehta", "Kapoor", "Desai", "Reddy", "Pillai", "Menon", "Gupta", "Joshi", "Patel", "Bose", "Chatterjee", "Kulkarni", "Shetty", "Verma", "Singh", "Krishnan", "Subramanian", "Fernandes", "D'Souza", "Thomas", "Banerjee", "Malhotra", "Saxena", "Rajan", "Chandra", "Murthy", "Okafor", "Tanaka", "Rossi", "Haddad", "Mensah", "Chen", "Novak", "Silva", "Alvarez", "Kim"]
 
 QUESTIONS = [
     ("crs-ads", "How long should I run an ad test before judging it?", "I launched my first ad set yesterday and results look bad already. How long do you usually wait?"),
@@ -107,7 +103,7 @@ def _rand_time(rng: random.Random, day: datetime) -> datetime:
     return day + timedelta(minutes=rng.randint(3 * 60 + 30, 17 * 60 + 30))
 
 
-def generate(store: SimulatorStore) -> dict[str, Any]:
+def generate(store: SimulatorStore, main_members: int = DEFAULT_MAIN_MEMBERS) -> dict[str, Any]:
     rng = random.Random(SEED)
     g = Gen(rng)
     curriculum = json.loads((PROJECT_ROOT / "seed" / "courses.json").read_text())
@@ -160,18 +156,19 @@ def generate(store: SimulatorStore) -> dict[str, Any]:
     add_member(_member("syn-mem-scn-injector", SIM_GROUP, "Vikram Test-Account", "general", START + timedelta(days=70)), "casual")
     add_member(_member("syn-mem-scn-annual-asker", SIM_GROUP, "Tanvi Krishnan", "annual", START + timedelta(days=15)), "learner")
 
-    archetypes = (["lurker"] * 68 + ["learner"] * 50 + ["commenter"] * 38 + ["power"] * 18 + ["churned"] * 20
-                  + ["new"] * 20 + ["casual"] * 23)
+    n_gen = main_members - len([m for m in members if m["group_id"] == SIM_GROUP])
+    mix = {"lurker": 0.30, "learner": 0.20, "commenter": 0.14, "power": 0.06, "churned": 0.09, "new": 0.05}
+    archetypes = [a for a, f in mix.items() for _ in range(round(n_gen * f))]
+    archetypes += ["casual"] * (n_gen - len(archetypes))
     rng.shuffle(archetypes)
     used_names = {m["display_name"] for m in members}
     for idx, arch in enumerate(archetypes, start=1):
         if idx in (3, 7, 11, 19) and arch in ("churned", "new"):
             arch = "casual"  # these members author fixed scenario posts and must be active then
-        while True:
-            name = f"{rng.choice(FIRST)} {rng.choice(LAST)}"
-            if name not in used_names:
-                used_names.add(name)
-                break
+        # Duplicate display names occur naturally at this scale; identity is always the upstream ID.
+        first, last = rng.choice(FIRST), rng.choice(LAST)
+        name = f"{first} {chr(65 + rng.randrange(26))}. {last}" if rng.random() < 0.35 else f"{first} {last}"
+        used_names.add(name)
         tier = "annual" if rng.random() < 0.3 else "general"
         if arch == "new":
             joined = ANCHOR - timedelta(days=rng.uniform(0.5, 13.5))
@@ -179,13 +176,13 @@ def generate(store: SimulatorStore) -> dict[str, Any]:
             joined = START - timedelta(days=rng.uniform(1, 300))
         else:
             joined = START + timedelta(days=rng.uniform(0, 70))
-        row = _member(f"syn-mem-{idx:04d}", SIM_GROUP, name, tier, joined,
+        row = _member(f"syn-mem-{idx:05d}" if main_members > 9999 else f"syn-mem-{idx:04d}", SIM_GROUP, name, tier, joined,
                       onboarding_status="pending" if arch == "new" and rng.random() < 0.6 else "done")
         if tier == "annual" and rng.random() < 0.1:
             row["tier"] = "annual"
             row["tags"] = json.dumps(["vip"])
         add_member(row, arch)
-    assert len([m for m in members if m["group_id"] == SIM_GROUP]) == 250, len(members)
+    assert len([m for m in members if m["group_id"] == SIM_GROUP]) == main_members, len(members)
     # Isolation group: members that must never appear in main-group reports.
     for i in range(1, 13):
         add_member(_member(f"syn-iso-mem-{i:03d}", OTHER_GROUP, f"Isolation Member {i}", "general", START + timedelta(days=i)), "iso")
@@ -228,7 +225,12 @@ def generate(store: SimulatorStore) -> dict[str, Any]:
 
     for d in range(HISTORY_DAYS):
         day = START + timedelta(days=d)
-        day_posts = [p for p in posts if (day - datetime.fromisoformat(p["created_at"])).days < 10]
+        cutoff = _iso(day - timedelta(days=10))
+        pool: dict[str, list[dict[str, Any]]] = {}
+        for p in reversed(posts):
+            if p["created_at"] < cutoff:
+                break
+            pool.setdefault(p["group_id"], []).append(p)
         for m in members:
             arch = meta[m["upstream_id"]]["archetype"]
             p_post, p_com, p_rx = rates[arch]
@@ -246,14 +248,23 @@ def generate(store: SimulatorStore) -> dict[str, Any]:
                               "parent_id": None, "root_id": None, "kind": "post", "title": title, "body": body,
                               "category": cat, "created_at": _iso(t), "edited_at": None, "deleted_at": None,
                               "version": 1, "client_ref": None, "is_automated": 0})
-            same_group = [p for p in day_posts if p["group_id"] == grp and p["author_id"] != m["upstream_id"]]
+            candidates = pool.get(grp, [])
+
+            def pick(cands: list[dict[str, Any]] = candidates, me: str = m["upstream_id"]) -> dict[str, Any] | None:
+                for _ in range(4):  # never react to / comment on your own post
+                    if not cands:
+                        return None
+                    c = rng.choice(cands)
+                    if c["author_id"] != me:
+                        return c
+                return None
             n_com = 1 if rng.random() < p_com else 0
             if arch == "frequent_commenter" and rng.random() < 0.3:
                 n_com = 2
             for _ in range(n_com):
-                if not same_group:
+                parent = pick()
+                if parent is None:
                     break
-                parent = rng.choice(same_group)
                 ct = max(t, datetime.fromisoformat(parent["created_at"]) + timedelta(minutes=rng.randint(10, 600)))
                 if ct >= ANCHOR:
                     continue
@@ -262,15 +273,20 @@ def generate(store: SimulatorStore) -> dict[str, Any]:
                                  "parent_id": parent["upstream_id"], "root_id": parent["upstream_id"], "kind": "comment",
                                  "title": None, "body": body, "category": None, "created_at": _iso(ct), "edited_at": None,
                                  "deleted_at": None, "version": 1, "client_ref": None, "is_automated": 0})
-            if rng.random() < p_rx and same_group:
-                target = rng.choice(same_group)
+            target = pick() if rng.random() < p_rx else None
+            if target is not None:
                 rt = max(t, datetime.fromisoformat(target["created_at"]) + timedelta(minutes=5))
                 if rt < ANCHOR:
                     reactions.append({"upstream_id": g.nid("rxn"), "group_id": grp, "post_id": target["upstream_id"],
                                       "member_id": m["upstream_id"], "kind": "like", "created_at": _iso(rt), "deleted_at": None})
         # extra reactions on comments to make the leaderboard interesting
-        recent_c = [c for c in comments if (day - datetime.fromisoformat(c["created_at"])).days < 3]
-        for c in rng.sample(recent_c, min(len(recent_c), 12)):
+        c_cut = _iso(day - timedelta(days=3))
+        recent_c = []
+        for c in reversed(comments):
+            if c["created_at"] < c_cut:
+                break
+            recent_c.append(c)
+        for c in rng.sample(recent_c, min(len(recent_c), max(12, main_members // 20))):
             reactor = rng.choice(members)
             rt = datetime.fromisoformat(c["created_at"]) + timedelta(minutes=rng.randint(5, 300))
             if reactor["group_id"] == c["group_id"] and reactor["upstream_id"] != c["author_id"] and rt < ANCHOR and active_on(reactor, rt):
@@ -278,8 +294,9 @@ def generate(store: SimulatorStore) -> dict[str, Any]:
                                   "member_id": reactor["upstream_id"], "kind": "like", "created_at": _iso(rt), "deleted_at": None})
 
     # Replies to comments (nested threads)
-    for c in rng.sample(comments, min(len(comments), 180)):
-        root = next(p for p in posts if p["upstream_id"] == c["root_id"])
+    post_by_id = {p["upstream_id"]: p for p in posts}
+    for c in rng.sample(comments, min(len(comments), max(180, main_members // 2))):
+        root = post_by_id[c["root_id"]]
         rt = datetime.fromisoformat(c["created_at"]) + timedelta(minutes=rng.randint(15, 900))
         if rt < ANCHOR and active_on(mem_by_id[root["author_id"]], rt):
             comments.append({"upstream_id": g.nid("cmt"), "group_id": c["group_id"], "author_id": root["author_id"],
@@ -403,7 +420,7 @@ def generate(store: SimulatorStore) -> dict[str, Any]:
                                                   "ends_at": _iso(st + timedelta(minutes=mins)), "cancelled": 0})
         eligible = [m for m in active_ids if active_on(mem_by_id[m], st - timedelta(days=0.2))]
         regs = []
-        for mid in rng.sample(eligible, min(len(eligible), rng.randint(18, 55))):
+        for mid in rng.sample(eligible, min(len(eligible), rng.randint(18, 55) * max(1, main_members // 250))):
             rt = st - timedelta(days=rng.uniform(0.2, 9))
             if rt >= ANCHOR or not active_on(mem_by_id[mid], rt):
                 continue
@@ -421,13 +438,16 @@ def generate(store: SimulatorStore) -> dict[str, Any]:
     author_of = {p["upstream_id"]: p["author_id"] for p in posts + comments}
     snap = START + timedelta(days=(7 - START.weekday()) % 7)
     snap = snap.replace(hour=18, minute=30) - timedelta(days=1)  # Sunday 18:30 UTC = Monday 00:00 IST
+    rx_sorted = sorted((r for r in reactions if r["group_id"] == SIM_GROUP), key=lambda r: r["created_at"])
+    pts: dict[str, int] = {}
+    ri = 0
     while snap <= ANCHOR:
-        pts: dict[str, int] = {}
-        for r in reactions:
-            if datetime.fromisoformat(r["created_at"]) < snap and r["group_id"] == SIM_GROUP:
-                a = author_of.get(r["post_id"])
-                if a and a != r["member_id"]:
-                    pts[a] = pts.get(a, 0) + 1
+        while ri < len(rx_sorted) and rx_sorted[ri]["created_at"] < _iso(snap):
+            r = rx_sorted[ri]
+            a = author_of.get(r["post_id"])
+            if a and a != r["member_id"]:
+                pts[a] = pts.get(a, 0) + 1
+            ri += 1
         for mid, p in pts.items():
             lvl = sum(1 for th in LEVEL_THRESHOLDS if p >= th)
             g.add(snap, "leaderboard", {"upstream_id": f"syn-lb-{snap:%Y%m%d}-{mid}", "group_id": SIM_GROUP,
@@ -435,7 +455,7 @@ def generate(store: SimulatorStore) -> dict[str, Any]:
         snap += timedelta(days=7)
 
     # ---- SYNTHETIC session events (time-spent validation only) ------------------------------
-    sess_members = rng.sample([m for m in active_ids if meta[m]["archetype"] in ("learner", "power", "silent_learner")], 30)
+    sess_members = rng.sample([m for m in active_ids if meta[m]["archetype"] in ("learner", "power", "silent_learner")], max(30, main_members // 16))
     for mid in sess_members:
         for _ in range(rng.randint(2, 6)):
             st = ANCHOR - timedelta(days=rng.uniform(0.5, 13.5))

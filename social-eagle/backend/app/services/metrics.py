@@ -73,10 +73,12 @@ def default_scope(session: Session, days: int = 30, group_id: int | None = None)
 
 
 def main_group_id(session: Session) -> int:
-    g = session.execute(select(Group.id).order_by(Group.id)).scalars().first()
-    if g is None:
+    """The default group: the non-import group with the most members (imports never become the default)."""
+    row = session.execute(select(Group.id, func.count(Member.id).label("n")).outerjoin(Member, Member.group_id == Group.id)
+                          .where(Group.source != "import").group_by(Group.id).order_by(func.count(Member.id).desc(), Group.id)).first()
+    if row is None:
         raise LookupError("No community data synced yet")
-    return int(g)
+    return int(row[0])
 
 
 def _member_filter(scope: Scope) -> list[Any]:

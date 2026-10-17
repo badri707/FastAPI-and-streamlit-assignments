@@ -86,7 +86,7 @@ def _expand_bulk(session: Session, bulk: Action) -> dict[str, Any]:
         session.commit()
         return {"result": "expired"}
     n = 0
-    for reg, m in session.execute(select(EventRegistration, Member).join(Member, Member.id == EventRegistration.member_id)
+    for _reg, m in session.execute(select(EventRegistration, Member).join(Member, Member.id == EventRegistration.member_id)
                                   .where(EventRegistration.event_id == ev.id, Member.status == "active")).all():
         child, created = actions.create_action(
             session, kind="reminder", group_id=bulk.group_id, target_type="member", target_upstream_id=m.upstream_id,

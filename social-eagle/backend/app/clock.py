@@ -12,6 +12,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
 
 from .db import get_engine
 from .timeutil import parse_ts
@@ -38,8 +39,8 @@ def _state() -> dict[str, Any]:
             import json
 
             st = json.loads(row[0]) if isinstance(row[0], str) else row[0]
-    except Exception:  # table may not exist before migration
-        pass
+    except OperationalError:  # settings table does not exist before the first migration
+        st = {"mode": "offset", "offset_s": 0.0}
     with _lock:
         _cache = (time.monotonic(), st)
     return st

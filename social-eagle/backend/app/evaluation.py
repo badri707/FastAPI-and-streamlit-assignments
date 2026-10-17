@@ -17,7 +17,7 @@ from .config import PROJECT_ROOT, Settings, get_settings
 from .connectors.factory import get_adapter, simulator_store
 from .migrate import upgrade
 from .models import AutomationRule, Segment
-from .seed import ANCHOR, generate, reset_store
+from .seed import ANCHOR, DEFAULT_MAIN_MEMBERS, generate, reset_store
 from .services import knowledge, sync
 
 BUILTIN_SEGMENTS = [
@@ -92,7 +92,8 @@ def _preserve_users(path: Path) -> list[tuple[Any, ...]]:
         return []
 
 
-def reset_evaluation(settings: Settings | None = None, *, run_sync: bool = True) -> dict[str, Any]:
+def reset_evaluation(settings: Settings | None = None, *, run_sync: bool = True,
+                     members: int = DEFAULT_MAIN_MEMBERS) -> dict[str, Any]:
     s = settings or get_settings()
     _guard(s)
     users = _preserve_users(s.app_db_path)
@@ -118,7 +119,7 @@ def reset_evaluation(settings: Settings | None = None, *, run_sync: bool = True)
 
             for u in users:
                 session.add(User(username=u[0], password_hash=u[1], role=u[2], created_at=clock.wall_now()))
-    seed_stats = generate(simulator_store(str(s.sim_db_path)))
+    seed_stats = generate(simulator_store(str(s.sim_db_path)), main_members=members)
     with db.session_scope() as session:
         kres = knowledge.ingest_directory(session, PROJECT_ROOT / "seed" / "knowledge")
     out: dict[str, Any] = {"seed": seed_stats, "knowledge": {
@@ -134,6 +135,7 @@ def reset_evaluation(settings: Settings | None = None, *, run_sync: bool = True)
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Seed/reset the SYNTHETIC evaluation community")
     ap.add_argument("--yes", action="store_true", help="Confirm discarding current evaluation changes")
+    ap.add_argument("--members", type=int, default=DEFAULT_MAIN_MEMBERS, help="Main-group member count (min 250)")
     args = ap.parse_args(argv)
     s = get_settings()
     _guard(s)
@@ -143,7 +145,10 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     import json
 
-    print(json.dumps(reset_evaluation(s), indent=2, default=str))
+    if args.members < 250:
+        print("--members must be at least 250 (scenario fixtures need them)", file=sys.stderr)
+        return 2
+    print(json.dumps(reset_evaluation(s, members=args.members), indent=2, default=str))
     return 0
 
 

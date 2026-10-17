@@ -25,10 +25,7 @@ from ..models import Course, KnowledgeChunk, KnowledgeDoc
 ALLOWED_EXT = {".md": "markdown", ".markdown": "markdown", ".txt": "text", ".pdf": "pdf"}
 MAX_BYTES = 5_000_000
 CHUNK_CHARS = 700
-STOPWORDS = set("""a an the and or but if then so to of in on for with at by from is are was were be been being do does did
-i me my we our you your he she it its they them this that these those what which who whom how why when where can could
-should would will shall may might must have has had not no yes any some all just about into over than too very please
-there here also get got want need know like really much many more most other such only own same""".split())
+STOPWORDS = set(["a", "an", "the", "and", "or", "but", "if", "then", "so", "to", "of", "in", "on", "for", "with", "at", "by", "from", "is", "are", "was", "were", "be", "been", "being", "do", "does", "did", "i", "me", "my", "we", "our", "you", "your", "he", "she", "it", "its", "they", "them", "this", "that", "these", "those", "what", "which", "who", "whom", "how", "why", "when", "where", "can", "could", "should", "would", "will", "shall", "may", "might", "must", "have", "has", "had", "not", "no", "yes", "any", "some", "all", "just", "about", "into", "over", "than", "too", "very", "please", "there", "here", "also", "get", "got", "want", "need", "know", "like", "really", "much", "many", "more", "most", "other", "such", "only", "own", "same"])
 
 
 class IngestError(ValueError):

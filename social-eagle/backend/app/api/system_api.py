@@ -147,8 +147,8 @@ def get_settings_api(db: Session = Depends(get_db), _: User = Depends(require_ad
 @router.put("/settings")
 def put_settings(body: SettingsIn, db: Session = Depends(get_db), user: User = Depends(require_admin)) -> dict:
     data = body.model_dump(exclude_none=True)
-    if "dataset_selection" in data:
-        if not data["dataset_selection"] or any(d != "synthetic" and not d.startswith("import:") for d in data["dataset_selection"]):
+    if "dataset_selection" in data and (
+            not data["dataset_selection"] or any(d != "synthetic" and not d.startswith("import:") for d in data["dataset_selection"])):
             raise HTTPException(400, "dataset_selection must list 'synthetic' and/or 'import:<id>' labels")
     if "ai_task_modes" in data:
         allowed = {"faq_reply": {"draft", "draft_only"}, "owner_chat": {"enabled", "disabled"}, "classify": {"enabled", "disabled"}}

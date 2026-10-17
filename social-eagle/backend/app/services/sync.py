@@ -35,7 +35,6 @@ from ..models import (
     Reaction,
     SessionEvent,
     Submission,
-    SupportItem,
     SyncDeferred,
     SyncState,
 )
@@ -139,6 +138,9 @@ class Applier:
             self.s.add(m)
             self.s.flush()
         else:
+            if any(t.tag == "local:erased" for t in m.tags):  # local erasure survives re-sync
+                fields.pop("display_name")
+                fields.pop("email")
             for k, v in fields.items():
                 setattr(m, k, v)
         tags = json.loads(p.get("tags") or "[]")

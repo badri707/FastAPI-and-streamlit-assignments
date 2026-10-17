@@ -132,7 +132,7 @@ class OllamaProvider:
                 "keep_alive": "15m",
                 "options": {"temperature": 0.1, "num_ctx": self.s.ai_num_ctx, "num_predict": max_tokens, "seed": 7}}
         last_err: Exception | None = None
-        for attempt in range(self.s.ai_max_retries + 1):
+        for _attempt in range(self.s.ai_max_retries + 1):
             t0 = time.monotonic()
             try:
                 with self._lock:  # one inference at a time in this process
