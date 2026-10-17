@@ -106,10 +106,12 @@ def reset_evaluation(settings: Settings | None = None, *, run_sync: bool = True,
     upgrade(s.app_db_path)
     clock.invalidate()
     with db.session_scope() as session:
+        # "Now" = 10:35 IST on the first day after the 90-day history (outside default quiet hours).
+        start_at = ANCHOR + timedelta(hours=10, minutes=35)
         if s.clock_mode == "frozen":
-            clock.freeze(session, ANCHOR + timedelta(minutes=5))
+            clock.freeze(session, start_at)
         else:
-            clock.align_to(session, ANCHOR + timedelta(minutes=5))
+            clock.align_to(session, start_at)
         for name, rule, params, desc in BUILTIN_SEGMENTS:
             session.add(Segment(name=name, rule=rule, params=params, description=desc, builtin=True))
         for r in default_rules(clock.now()):

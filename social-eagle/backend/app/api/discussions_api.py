@@ -111,7 +111,7 @@ def support_list(
     total = db.execute(select(func.count()).select_from(qy.subquery())).scalar()
     now = clock.now()
     rows = []
-    for i, p in db.execute(qy.order_by(SupportItem.priority.asc(), Post.created_at.desc())
+    for i, p in db.execute(qy.order_by(Post.created_at.desc(), SupportItem.id.desc())
                            .offset((page - 1) * page_size).limit(page_size)).all():
         a = db.get(Member, p.author_id) if p.author_id else None
         pending = actions.pending_post_reply(db, p)

@@ -16,7 +16,9 @@ DEFAULTS: dict[str, Any] = {
         "quiet_days": 21,
         "stalled_progress_days": 14,
         "unanswered_hours": 24,
-        "support_keywords": ["help", "stuck", "refund", "cancel", "can't access", "cannot access", "error", "not working"],
+        # Phrases (not single common words) to avoid flagging ordinary questions as support needs.
+        "support_keywords": ["please help", "need help", "help!", "stuck", "refund", "cancel my", "can't access",
+                             "cannot access", "error", "not working", "locked out"],
     },
     "ai_task_modes": {"faq_reply": "draft", "owner_chat": "enabled", "classify": "enabled"},
     "dataset_selection": ["synthetic"],

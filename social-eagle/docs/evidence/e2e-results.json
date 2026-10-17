@@ -1,0 +1,317 @@
+{
+  "config": {
+    "configFile": "/home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/playwright.config.ts",
+    "rootDir": "/home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "../docs/evidence/e2e-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 900000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.52.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "walkthrough.spec.ts",
+      "file": "walkthrough.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "overview, members, notes and segments",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 900000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3071,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-17T20:06:08.440Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "500ef8780b21ce3c46c7-825d0d91ebfd1252e0cf",
+          "file": "walkthrough.spec.ts",
+          "line": 48,
+          "column": 1
+        },
+        {
+          "title": "support inbox and thread",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 900000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 995,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-17T20:06:12.263Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "500ef8780b21ce3c46c7-984c3fcaf956f60112f9",
+          "file": "walkthrough.spec.ts",
+          "line": 70,
+          "column": 1
+        },
+        {
+          "title": "lab question → real AI auto-reply → published in local thread",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 900000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11478,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-17T20:06:13.263Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "500ef8780b21ce3c46c7-4f88bf397ec4839b9c2b",
+          "file": "walkthrough.spec.ts",
+          "line": 81,
+          "column": 1
+        },
+        {
+          "title": "progress change updates member report",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 900000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1199,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m3\u001b[39m\nReceived: \u001b[31m2\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m3\u001b[39m\nReceived: \u001b[31m2\u001b[39m\n    at /home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/e2e/walkthrough.spec.ts:116:46",
+                    "location": {
+                      "file": "/home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/e2e/walkthrough.spec.ts",
+                      "column": 46,
+                      "line": 116
+                    },
+                    "snippet": "  114 |   await page.goto(`/members/${id}`)\n  115 |   const p1 = await page.request.get(`/api/members/${id}`).then(r => r.json())\n> 116 |   expect(p1.profile.lessons_marked_complete).toBe(p0.profile.lessons_marked_complete + 1)\n      |                                              ^\n  117 |   await page.getByRole('tab', { name: 'Progress' }).click()\n  118 |   await shot(page, '07-progress-updated')\n  119 | })"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/e2e/walkthrough.spec.ts",
+                        "column": 46,
+                        "line": 116
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m3\u001b[39m\nReceived: \u001b[31m2\u001b[39m\n\n  114 |   await page.goto(`/members/${id}`)\n  115 |   const p1 = await page.request.get(`/api/members/${id}`).then(r => r.json())\n> 116 |   expect(p1.profile.lessons_marked_complete).toBe(p0.profile.lessons_marked_complete + 1)\n      |                                              ^\n  117 |   await page.getByRole('tab', { name: 'Progress' }).click()\n  118 |   await shot(page, '07-progress-updated')\n  119 | })\n    at /home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/e2e/walkthrough.spec.ts:116:46"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-17T20:06:24.748Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/test-results/walkthrough-progress-change-updates-member-report/test-failed-1.png"
+                    },
+                    {
+                      "name": "_error-context-0",
+                      "contentType": "text/markdown",
+                      "path": "/home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/test-results/walkthrough-progress-change-updates-member-report/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/e2e/walkthrough.spec.ts",
+                    "column": 46,
+                    "line": 116
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "500ef8780b21ce3c46c7-e17127bcffc7163d22e8",
+          "file": "walkthrough.spec.ts",
+          "line": 103,
+          "column": 1
+        },
+        {
+          "title": "owner chat answers from calculated metrics",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 900000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-17T20:06:26.027Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "500ef8780b21ce3c46c7-154add5ef9411ea11689",
+          "file": "walkthrough.spec.ts",
+          "line": 121,
+          "column": 1
+        },
+        {
+          "title": "pause switch, reports and knowledge",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 900000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-17T20:06:26.027Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "500ef8780b21ce3c46c7-2303e2b3c2e190389808",
+          "file": "walkthrough.spec.ts",
+          "line": 129,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-17T20:06:07.257Z",
+    "duration": 18792.513000000003,
+    "expected": 3,
+    "skipped": 2,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}
