@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Environment and health report. Never prints secrets.
+source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
+BRIEF="${1:-}"
+need_venv
+cd "$BACKEND" && exec "$PY" -m app.doctor $BRIEF

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Consistent online backup (SQLite backup API) of app + simulator databases.
+source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
+need_venv
+DEST="${1:-}"
+cd "$BACKEND" && "$PY" - "$DEST" <<'PY'
+import json, sys
+from pathlib import Path
+from app.services.backup import create_backup
+dest = Path(sys.argv[1]).expanduser() if len(sys.argv) > 1 and sys.argv[1] else None
+print(json.dumps(create_backup(label="cli", dest_root=dest), indent=2))
+PY

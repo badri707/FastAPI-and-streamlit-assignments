@@ -173,8 +173,8 @@ def member_totals(session: Session, scope: Scope) -> dict[str, Any]:
                                                          Member.joined_at < e)).scalar()
     left = session.execute(select(func.count()).where(*base, Member.is_staff.is_(False), Member.left_at >= s,
                                                        Member.left_at < e)).scalar()
-    staff = sum(n for st, _t, is_staff, n in rows if is_staff and st == "active")
-    return {"active_members": active, "staff": staff, "by_tier": by_tier, "joined_in_range": joined, "left_in_range": left,
+    staff_count = sum(int(n) for st, _t, is_staff, n in rows if is_staff and st == "active")
+    return {"active_members": active, "staff": staff_count, "by_tier": by_tier, "joined_in_range": joined, "left_in_range": left,
             "left_total": sum(n for st, _t, staff_, n in rows if st in ("left", "removed") and not staff_)}
 
 
@@ -294,27 +294,29 @@ def leaderboard(session: Session, scope: Scope, top: int = 10) -> dict[str, Any]
 
 
 def time_spent(session: Session, member_id: int, start: datetime, end: datetime) -> dict[str, Any]:
-    """Time-spent from explicitly SYNTHETIC session events. Rules: a start without stop is capped at
-    SESSION_IDLE_CAP_MIN minutes (or the next start); overlapping sessions are merged; stop without start ignored."""
+    """Time-spent from explicitly SYNTHETIC session events. Rules: concurrent sessions (e.g. two devices) are allowed;
+    a stop closes the earliest open start; a start with no stop within SESSION_IDLE_CAP_MIN minutes is capped at that
+    cap; a stop without an open start is ignored; overlapping intervals are merged so time is never double-counted."""
     evs = session.execute(select(SessionEvent).where(SessionEvent.member_id == member_id, SessionEvent.at >= start,
-                                                     SessionEvent.at < end).order_by(SessionEvent.at)).scalars().all()
+                                                     SessionEvent.at < end).order_by(SessionEvent.at, SessionEvent.id)).scalars().all()
     if not evs:
         return {"status": "unavailable", "minutes": None,
                 "note": "No session events observed for this member/period. Time spent is unknown — not zero."}
+    cap = timedelta(minutes=SESSION_IDLE_CAP_MIN)
     intervals: list[tuple[datetime, datetime]] = []
-    open_at: datetime | None = None
+    open_starts: list[datetime] = []
     capped = 0
     for ev in evs:
+        for st in [s for s in open_starts if s + cap < ev.at]:  # stale: idle longer than the cap
+            open_starts.remove(st)
+            intervals.append((st, st + cap))
+            capped += 1
         if ev.kind == "start":
-            if open_at is not None:
-                intervals.append((open_at, min(ev.at, open_at + timedelta(minutes=SESSION_IDLE_CAP_MIN))))
-                capped += 1
-            open_at = ev.at
-        elif ev.kind == "stop" and open_at is not None:
-            intervals.append((open_at, ev.at))
-            open_at = None
-    if open_at is not None:
-        intervals.append((open_at, min(end, open_at + timedelta(minutes=SESSION_IDLE_CAP_MIN))))
+            open_starts.append(ev.at)
+        elif ev.kind == "stop" and open_starts:
+            intervals.append((open_starts.pop(0), ev.at))
+    for st in open_starts:
+        intervals.append((st, min(end, st + cap)))
         capped += 1
     intervals.sort()
     merged: list[list[datetime]] = []
@@ -346,8 +348,8 @@ def member_profile(session: Session, member_id: int, scope: Scope) -> dict[str, 
         session.execute(select(func.max(Post.created_at)).where(Post.author_id == member_id)).scalar(),
         session.execute(select(func.max(Reaction.created_at)).where(Reaction.member_id == member_id)).scalar(),
     ]), default=None)
-    days = session.execute(select(Post.created_at).where(Post.author_id == member_id, Post.created_at >= s,
-                                                         Post.created_at < e)).scalars().all()
+    days = list(session.execute(select(Post.created_at).where(Post.author_id == member_id, Post.created_at >= s,
+                                                              Post.created_at < e)).scalars().all())
     days += session.execute(select(Reaction.created_at).where(Reaction.member_id == member_id, Reaction.created_at >= s,
                                                               Reaction.created_at < e)).scalars().all()
     accessible = session.execute(select(func.count(Lesson.id)).join(Course, Course.id == Lesson.course_id)
@@ -405,10 +407,10 @@ def segment_members(session: Session, rule: str, params: dict[str, Any], group_i
     if rule == "needs_attention":
         hours = int(params.get("hours", 24))
         cutoff = now - timedelta(hours=hours)
-        q = (select(Post.author_id).join(SupportItem, SupportItem.post_id == Post.id)
+        attn = (select(Post.author_id).join(SupportItem, SupportItem.post_id == Post.id)
              .where(SupportItem.status.in_(["open", "assigned", "drafted"]),
                     or_(and_(SupportItem.priority == "high"), and_(SupportItem.first_response_at.is_(None), Post.created_at < cutoff))))
-        return list(session.execute(select(Member.id).where(*base, Member.id.in_(q))).scalars())
+        return list(session.execute(select(Member.id).where(*base, Member.id.in_(attn))).scalars())
     if rule == "stalled_progress":
         days = int(params.get("days", 14))
         cutoff = now - timedelta(days=days)

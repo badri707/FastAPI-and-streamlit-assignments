@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Verify a backup by restoring it into a SEPARATE directory (default), or replace live data with --replace-live.
+#   scripts/restore <backup-dir> [target-dir]
+#   scripts/restore <backup-dir> --replace-live      (app must be stopped; current data is backed up first)
+source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
+need_venv
+[ $# -ge 1 ] || die "usage: scripts/restore <backup-dir> [target-dir | --replace-live]"
+SRC="$1"; MODE="${2:-}"
+DATA="$(setting data_dir)"
+if [ "$MODE" = "--replace-live" ]; then
+  if [ -f "$DATA/run/supervisor.pid" ] && kill -0 "$(cat "$DATA/run/supervisor.pid")" 2>/dev/null; then die "Stop the app first: scripts/stop"; fi
+  printf 'This replaces the live databases in %s with %s. Type REPLACE to continue: ' "$DATA" "$SRC"; read -r ans
+  [ "$ans" = "REPLACE" ] || die "Cancelled."
+  "$ROOT/scripts/backup" >/dev/null && say "Safety backup of current data created."
+  STAGE="$DATA/restore-staging"; rm -rf "$STAGE"
+  (cd "$BACKEND" && "$PY" -c "import sys,json; from pathlib import Path; from app.services.backup import verify_and_restore as v; print(json.dumps(v(Path(sys.argv[1]), Path(sys.argv[2])), indent=2))" "$SRC" "$STAGE")
+  for f in app.db simulator.db; do
+    [ -f "$STAGE/$f" ] && { rm -f "$DATA/$f" "$DATA/$f-wal" "$DATA/$f-shm"; mv "$STAGE/$f" "$DATA/$f"; }
+  done
+  rm -rf "$STAGE"; say "Live data replaced from $SRC."
+else
+  TARGET="${MODE:-$DATA/restore-check/$(basename "$SRC")}"
+  (cd "$BACKEND" && "$PY" -c "import sys,json; from pathlib import Path; from app.services.backup import verify_and_restore as v; print(json.dumps(v(Path(sys.argv[1]), Path(sys.argv[2])), indent=2))" "$SRC" "$TARGET")
+  say "Restored into separate directory $TARGET (running data untouched)."
+fi

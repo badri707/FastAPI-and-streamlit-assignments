@@ -127,11 +127,11 @@ def generate(store: SimulatorStore, main_members: int = DEFAULT_MAIN_MEMBERS) ->
     for c in curriculum["courses"]:
         n = len(c["lessons"])
         targets = [n] + ([3] if c["id"] in ("crs-content", "crs-ads") else [])
-        for t in targets:
-            a = {"upstream_id": f"asg-{c['id']}-l{t}", "course_id": c["id"], "lesson_id": f"{c['id']}-l{t}",
-                 "title": f"Assignment: {c['lessons'][t - 1]}"}
-            assignments.append(a)
-            g.add(START - timedelta(days=300), "assignment", a)
+        for pos in targets:
+            asg = {"upstream_id": f"asg-{c['id']}-l{pos}", "course_id": c["id"], "lesson_id": f"{c['id']}-l{pos}",
+                   "title": f"Assignment: {c['lessons'][pos - 1]}"}
+            assignments.append(asg)
+            g.add(START - timedelta(days=300), "assignment", asg)
 
     # ---- members ----------------------------------------------------------------------------
     members: list[dict[str, Any]] = []
@@ -430,9 +430,9 @@ def generate(store: SimulatorStore, main_members: int = DEFAULT_MAIN_MEMBERS) ->
             attendees = [m for m in regs if rng.random() < 0.6] + rng.sample(eligible, 3)  # some walk-ins
             for mid in dict.fromkeys(attendees):
                 joined = st + timedelta(minutes=rng.randint(0, 15))
-                left = None if rng.random() < 0.1 else joined + timedelta(minutes=rng.randint(10, mins))
+                left_at = None if rng.random() < 0.1 else joined + timedelta(minutes=rng.randint(10, mins))
                 g.add(joined, "attendance", {"upstream_id": g.nid("att"), "event_id": eid, "member_id": mid,
-                                             "joined_at": _iso(joined), "left_at": _iso(left) if left else None})
+                                             "joined_at": _iso(joined), "left_at": _iso(left_at) if left_at else None})
 
     # ---- leaderboard snapshots (weekly, Monday 00:00 IST) -----------------------------------
     author_of = {p["upstream_id"]: p["author_id"] for p in posts + comments}
@@ -443,10 +443,10 @@ def generate(store: SimulatorStore, main_members: int = DEFAULT_MAIN_MEMBERS) ->
     ri = 0
     while snap <= ANCHOR:
         while ri < len(rx_sorted) and rx_sorted[ri]["created_at"] < _iso(snap):
-            r = rx_sorted[ri]
-            a = author_of.get(r["post_id"])
-            if a and a != r["member_id"]:
-                pts[a] = pts.get(a, 0) + 1
+            rx = rx_sorted[ri]
+            author = author_of.get(rx["post_id"])
+            if author and author != rx["member_id"]:
+                pts[author] = pts.get(author, 0) + 1
             ri += 1
         for mid, p in pts.items():
             lvl = sum(1 for th in LEVEL_THRESHOLDS if p >= th)
@@ -471,23 +471,23 @@ def generate(store: SimulatorStore, main_members: int = DEFAULT_MAIN_MEMBERS) ->
     # Out-of-order: a few comments delivered before their parent post.
     post_idx = {r[2]["upstream_id"]: i for i, r in enumerate(feed) if r[1] == "post" and r[2]["kind"] == "post"}
     moved = 0
-    for i, r in enumerate(list(feed)):
+    for i, fr in enumerate(list(feed)):
         if moved >= 6:
             break
-        if r[1] == "post" and r[2]["kind"] == "comment" and r[2]["parent_id"] in post_idx and i > post_idx[r[2]["parent_id"]] + 5:
-            feed.remove(r)
-            feed.insert(post_idx[r[2]["parent_id"]], r)
+        if fr[1] == "post" and fr[2]["kind"] == "comment" and fr[2]["parent_id"] in post_idx and i > post_idx[fr[2]["parent_id"]] + 5:
+            feed.remove(fr)
+            feed.insert(post_idx[fr[2]["parent_id"]], fr)
             post_idx = {x[2]["upstream_id"]: j for j, x in enumerate(feed) if x[1] == "post" and x[2]["kind"] == "post"}
             moved += 1
     # Late arrivals: some progress events arrive at the end of the feed with their original timestamps.
     late = [r for r in feed if r[1] == "progress" and r[2]["kind"] == "completed"][100:108]
-    for r in late:
-        feed.remove(r)
-        feed.append(r)
+    for fr in late:
+        feed.remove(fr)
+        feed.append(fr)
     # Duplicated deliveries: same upstream record delivered twice.
     dups = rng.sample([r for r in feed if r[1] in ("reaction", "progress", "post")], 12)
-    for r in dups:
-        feed.insert(rng.randint(feed.index(r) + 1, len(feed)), r)
+    for fr in dups:
+        feed.insert(rng.randint(feed.index(fr) + 1, len(feed)), fr)
 
     with store.connect() as c:
         c.execute("BEGIN")

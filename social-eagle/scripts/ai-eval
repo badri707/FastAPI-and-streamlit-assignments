@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Real-model evaluation set (needs Ollama + the configured model). Writes docs/evidence/ai-eval-*.json
+source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
+need_venv
+cd "$BACKEND" && exec "$PY" -m tests.ai_eval.run "$@"

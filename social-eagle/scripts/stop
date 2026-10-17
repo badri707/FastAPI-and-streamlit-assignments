@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Stop only this project's supervisor (which stops its API and worker gracefully).
+source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
+need_venv
+DATA="$(setting data_dir)"; PIDF="$DATA/run/supervisor.pid"
+[ -f "$PIDF" ] || { say "Not running."; exit 0; }
+PID="$(cat "$PIDF")"
+if ! kill -0 "$PID" 2>/dev/null; then rm -f "$PIDF"; say "Not running (stale pid file removed)."; exit 0; fi
+CMD="$(ps -o command= -p "$PID" 2>/dev/null || true)"
+case "$CMD" in
+  *app.supervisor*) ;;
+  *) die "PID $PID is not this project's supervisor ($CMD); refusing to stop it." ;;
+esac
+kill -TERM "$PID"
+for _ in $(seq 1 50); do kill -0 "$PID" 2>/dev/null || { say "Stopped."; exit 0; }; sleep 0.5; done
+warn "Supervisor still running after 25 s; sending SIGKILL"; kill -KILL "$PID" || true

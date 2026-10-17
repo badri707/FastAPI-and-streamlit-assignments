@@ -219,7 +219,10 @@ def answer_question(
                 f"{c['doc_key']}={'/'.join(c['values'])}" for c in conflict)]
     top_permitted = max((p.score for p in passages), default=0.0)
     strong_restricted = [r for r in restricted if r["score"] >= top_permitted * 0.9]
-    if status in ("abstain", "invalid") and strong_restricted:
+    best_is_restricted = any(r["score"] > top_permitted for r in restricted)
+    if strong_restricted and status in ("answered", "unverified") and not best_is_restricted:
+        reasons = [*reasons, "Comparable material exists in a course outside the member's tier; staff review before sending"]
+    if (status in ("abstain", "invalid") and strong_restricted) or (best_is_restricted and status in ("answered", "unverified")):
         names = ", ".join(r["course_title"] for r in strong_restricted[:2])
         status = "restricted"
         answer = (f"This looks like it's covered in {names}, which isn't included in your current membership tier, "

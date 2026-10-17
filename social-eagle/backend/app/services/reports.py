@@ -66,11 +66,11 @@ def export(session: Session, kind: str, scope: metrics.Scope) -> tuple[str, str]
         cols = ["date_ist", "posts", "comments", "reactions", "distinct_contributors"]
     elif kind == "support":
         rows = []
-        for it, p in session.execute(select(SupportItem, Post).join(Post, Post.id == SupportItem.post_id)
+        for it, post in session.execute(select(SupportItem, Post).join(Post, Post.id == SupportItem.post_id)
                                      .where(SupportItem.group_id == scope.group_id, Post.created_at >= s, Post.created_at < e)
                                      .order_by(Post.created_at)).all():
-            frt = round((it.first_response_at - p.created_at).total_seconds() / 3600, 2) if it.first_response_at else None
-            rows.append([p.upstream_id, p.title, it.label, it.label_source, it.status, it.human_verified, iso(p.created_at),
+            frt = round((it.first_response_at - post.created_at).total_seconds() / 3600, 2) if it.first_response_at else None
+            rows.append([post.upstream_id, post.title, it.label, it.label_source, it.status, it.human_verified, iso(post.created_at),
                          iso(it.first_response_at), it.first_response_by, frt, iso(it.resolved_at)])
         cols = ["post_upstream_id", "title", "label", "label_source", "status", "human_verified", "asked_at_utc",
                 "first_response_at_utc", "first_response_by", "first_response_hours", "resolved_at_utc"]
@@ -82,12 +82,12 @@ def export(session: Session, kind: str, scope: metrics.Scope) -> tuple[str, str]
                 "remote_id", "error"]
     elif kind == "progress":
         rows = []
-        for c in session.execute(select(Course).where(Course.group_id == scope.group_id)).scalars():
-            lessons = session.execute(select(Lesson).where(Lesson.course_id == c.id).order_by(Lesson.position)).scalars().all()
+        for course in session.execute(select(Course).where(Course.group_id == scope.group_id)).scalars():
+            lessons = session.execute(select(Lesson).where(Lesson.course_id == course.id).order_by(Lesson.position)).scalars().all()
             for lsn in lessons:
                 n = session.execute(select(func.count()).where(LessonCompletion.lesson_id == lsn.id,
                                                                LessonCompletion.completed.is_(True))).scalar()
-                rows.append([c.title, c.access_tiers, lsn.position, lsn.title, n])
+                rows.append([course.title, course.access_tiers, lsn.position, lsn.title, n])
         cols = ["course", "access_tiers_synthetic", "lesson_position", "lesson", "members_marked_complete"]
     else:
         raise ValueError(f"unknown export {kind}")

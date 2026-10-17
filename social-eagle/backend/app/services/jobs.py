@@ -8,10 +8,11 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, cast
 
 from sqlalchemy import DateTime, bindparam, select, text
 from sqlalchemy.dialects.sqlite import insert
+from sqlalchemy.engine import CursorResult
 from sqlalchemy.orm import Session
 
 from .. import clock, kv
@@ -50,7 +51,7 @@ def enqueue(
         kind=kind, dedupe_key=dedupe_key, payload=payload or {}, status="queued", priority=priority, attempts=0,
         max_attempts=max_attempts, run_after=run_after or now, expires_at=expires_at, created_at=now, updated_at=now,
     ).on_conflict_do_nothing(index_elements=["dedupe_key"])
-    res = session.execute(stmt)
+    res = cast(CursorResult[Any], session.execute(stmt))
     session.flush()
     job = session.execute(select(Job).filter_by(dedupe_key=dedupe_key)).scalar_one()
     return job, bool(res.rowcount)

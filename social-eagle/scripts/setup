@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Install dependencies, run migrations, build the UI and seed the SYNTHETIC evaluation community. Safe to re-run.
+source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
+command -v uv >/dev/null 2>&1 || die "uv is required (free). Install: brew install uv   (or see https://docs.astral.sh/uv/)"
+command -v npm >/dev/null 2>&1 || die "Node.js 20+ with npm is required (free). Install: brew install node"
+[ -f "$ROOT/.env" ] || { cp "$ROOT/.env.example" "$ROOT/.env"; chmod 600 "$ROOT/.env"; say "Created .env from .env.example"; }
+say "== Backend dependencies (uv, Python 3.12, locked)"
+(cd "$BACKEND" && uv sync --frozen --python 3.12)
+say "== Database migrations"
+(cd "$BACKEND" && "$PY" -m app.migrate)
+say "== Frontend dependencies and build"
+(cd "$FRONTEND" && npm ci --no-audit --no-fund && npm run build)
+if [ ! -f "$(setting sim_db_path)" ]; then
+  say "== Seeding the SYNTHETIC evaluation community (first run; ~2-3 minutes for 3,200 members)"
+  (cd "$BACKEND" && "$PY" -m app.evaluation --yes >/dev/null) && say "Seeded."
+else
+  say "Evaluation data already present (use scripts/reset-evaluation to start over)."
+fi
+"$ROOT/scripts/doctor" || true
+say "Setup complete. Start with: \"$ROOT/scripts/start\""

@@ -112,13 +112,13 @@ def run_tool(session: Session, tool: str, args: dict[str, Any]) -> dict[str, Any
                 "first_members": names}
     if tool == "unanswered_questions":
         now = clock.now()
-        rows = session.execute(select(SupportItem, Post).join(Post, Post.id == SupportItem.post_id)
+        open_rows = session.execute(select(SupportItem, Post).join(Post, Post.id == SupportItem.post_id)
                                .where(SupportItem.group_id == gid, SupportItem.status.in_(["open", "assigned", "drafted"]),
                                       SupportItem.first_response_at.is_(None)).order_by(Post.created_at).limit(10)).all()
         total = session.execute(select(func.count()).where(SupportItem.group_id == gid, SupportItem.first_response_at.is_(None),
                                                            SupportItem.status.in_(["open", "assigned", "drafted"]))).scalar()
         return {"total_unanswered": total, "oldest": [{"title": p.title, "label": i.label, "status": i.status,
-                                                        "age_hours": round((now - p.created_at).total_seconds() / 3600, 1)} for i, p in rows]}
+                                                        "age_hours": round((now - p.created_at).total_seconds() / 3600, 1)} for i, p in open_rows]}
     if tool == "course_progress":
         lr = metrics.learning(session, metrics.default_scope(session, 30, gid))
         return {"courses": [{k: c[k] for k in ("title", "access_tiers", "eligible_active_members", "started",
@@ -170,7 +170,7 @@ def ask(session: Session, question: str, history: list[dict[str, str]] | None = 
         return {"status": "unavailable", "answer": None, "detail": str(e), "ai_run_id": rid,
                 "hint": "The deterministic Overview, Reports and Members pages work without the model."}
     data = route.data or {}
-    tool = data.get("tool") if data.get("tool") in TOOLS else "unsupported"
+    tool: str = str(data["tool"]) if data.get("tool") in TOOLS else "unsupported"
     args = {k: data.get(k) for k in ("days", "name", "segment", "query", "pause") if data.get(k) not in (None, "")}
     if tool == "course_info":
         res = answer_question(session, str(args.get("query") or question), asker=None, owner=True, task="owner_chat_course")

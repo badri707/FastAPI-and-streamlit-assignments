@@ -19,6 +19,8 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      // API payloads are dynamic JSON validated server-side; pages read them loosely.
+      '@typescript-eslint/no-explicit-any': 'off',
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

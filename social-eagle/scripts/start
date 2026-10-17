@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Start the API + worker under the supervisor (background), wait for health, print the local URL.
+source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
+need_venv
+DATA="$(setting data_dir)"; HOST="$(setting host)"; PORT="$(setting port)"
+RUN="$DATA/run"; mkdir -p "$RUN" "$DATA/logs"
+if [ -f "$RUN/supervisor.pid" ] && kill -0 "$(cat "$RUN/supervisor.pid")" 2>/dev/null; then
+  say "Already running: http://$HOST:$PORT/"; exit 0
+fi
+[ -f "$FRONTEND/dist/index.html" ] || { say "Building UI…"; (cd "$FRONTEND" && npm run build >/dev/null); }
+(cd "$BACKEND" && nohup "$PY" -m app.supervisor >>"$DATA/logs/supervisor.log" 2>&1 &)
+for _ in $(seq 1 40); do
+  if curl -fsS --noproxy '*' "http://$HOST:$PORT/api/auth/status" >/dev/null 2>&1; then break; fi
+  sleep 0.5
+done
+if ! curl -fsS --noproxy '*' "http://$HOST:$PORT/api/auth/status" >/dev/null 2>&1; then
+  tail -n 20 "$DATA/logs/supervisor.log" >&2 || true
+  die "API did not become healthy. See $DATA/logs/"
+fi
+say "Social Eagle is running (Evaluation — synthetic community data)"
+say "  URL:     http://$HOST:$PORT/"
+say "  Logs:    $DATA/logs/"
+say "  Stop:    \"$ROOT/scripts/stop\""
+if [ -f "$DATA/enrollment.token" ]; then
+  say "  First run — one-time enrollment token: $(cat "$DATA/enrollment.token")"
+fi
+sleep 3
+"$ROOT/scripts/doctor" --brief || true
+say "Note: jobs run only while this computer is awake and this app is started."

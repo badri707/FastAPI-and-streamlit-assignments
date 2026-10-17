@@ -39,3 +39,10 @@ ignore = ["S101", "B008", "S311", "SIM105", "E501"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = ["ai: requires the local Ollama model (real inference)", "slow: long-running"]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+warn_unused_ignores = false
+check_untyped_defs = true
+plugins = []

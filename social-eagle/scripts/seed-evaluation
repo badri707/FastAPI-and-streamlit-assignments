@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Seed the SYNTHETIC evaluation community (fixed seed). Refuses outside RUN_MODE=evaluation.
+#   scripts/seed-evaluation [--members N]
+source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
+need_venv
+DATA="$(setting data_dir)"
+if [ -f "$DATA/app.db" ]; then
+  printf 'WARNING: this DISCARDS all evaluation changes in %s (admin accounts are kept). Type RESET to continue: ' "$DATA"; read -r ans
+  [ "$ans" = "RESET" ] || die "Cancelled."
+fi
+if [ -f "$DATA/run/supervisor.pid" ] && kill -0 "$(cat "$DATA/run/supervisor.pid")" 2>/dev/null; then die "Stop the app first: scripts/stop"; fi
+cd "$BACKEND" && "$PY" -m app.evaluation --yes "$@"

@@ -67,9 +67,11 @@ def describe() -> dict[str, Any]:
 def set_state(session: Any, state: dict[str, Any]) -> None:
     from . import kv
 
+    global _cache
     kv.put(session, "clock", state)
     session.flush()
-    invalidate()
+    with _lock:  # this process sees the new time immediately; other processes after the commit
+        _cache = (time.monotonic(), dict(state))
 
 
 def freeze(session: Any, at: datetime) -> None:

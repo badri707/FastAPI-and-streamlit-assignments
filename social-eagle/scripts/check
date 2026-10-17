@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Fast quality gate: lint, types, unit + integration tests, frontend typecheck/lint/build.
+# AI quality evaluation (real model) is separate: scripts/ai-eval
+source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
+need_venv
+cd "$BACKEND"
+say "== ruff";  "$PY" -m ruff check app tests
+say "== mypy";  "$PY" -m mypy app
+say "== pytest (unit + integration, no live Skool, no model)"; "$PY" -m pytest -q -m "not ai" "$@"
+cd "$FRONTEND"
+say "== frontend typecheck"; npx tsc -b
+say "== frontend lint"; npm run lint --silent
+say "== frontend build"; npm run build --silent >/dev/null
+say "All checks passed."

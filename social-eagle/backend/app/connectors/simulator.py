@@ -114,7 +114,7 @@ FAULT_KINDS = {
     "rate_limited": "Calls fail with a rate-limit response.",
     "timeout_after_send": "The next write is persisted remotely but the caller receives a timeout.",
     "timeout_before_send": "The next write times out before anything is persisted.",
-    "partial_sync": "The change feed fails after the first page (partial sync).",
+    "partial_sync": "The change feed fails after the first page (params.skip_pages, default 1) — a partial sync.",
     "slow": "Each call sleeps `params.seconds` before responding.",
 }
 
@@ -410,8 +410,16 @@ class SimulatorAdapter(CommunityAdapter):
         after = int(cursor or 0)
         with self.store.connect() as c:
             self._gate(c, "fetch")
-            if after > 0 and self.store.take_fault(c, "partial_sync") is not None:
-                raise ConnectorUnavailable("Simulated: change feed failed mid-sync (partial sync)")
+            pr = c.execute("SELECT params FROM sim_faults WHERE kind='partial_sync'").fetchone()
+            if pr is not None:
+                params = json.loads(pr["params"] or "{}")
+                skip = int(params.get("skip_pages", 1))
+                if skip > 0:  # let the first page(s) through, then fail mid-sync
+                    params["skip_pages"] = skip - 1
+                    c.execute("UPDATE sim_faults SET params=? WHERE kind='partial_sync'", (json.dumps(params),))
+                else:
+                    self.store.take_fault(c, "partial_sync")
+                    raise ConnectorUnavailable("Simulated: change feed failed mid-sync (partial sync)")
             rows = c.execute(
                 "SELECT seq, entity, upstream_id, op, payload FROM sim_changes WHERE seq > ? ORDER BY seq LIMIT ?",
                 (after, limit + 1),
