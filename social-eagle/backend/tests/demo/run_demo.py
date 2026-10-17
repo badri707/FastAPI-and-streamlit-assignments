@@ -96,7 +96,7 @@ def main() -> int:
          new_pid is not None and hb["state"] == "alive" and bot_replies(post_up) == 1)
     mem = c.get("/api/members", params={"q": "Tanvi Krishnan"}).json()["rows"][0]
     before = c.get(f"/api/members/{mem['id']}").json()
-    done = {l["title"] for cc in before["progress"] if cc["accessible"] for l in cc["lesson_states"] if l["completed"]}
+    done = {ls["title"] for cc in before["progress"] if cc["accessible"] for ls in cc["lesson_states"] if ls["completed"]}
     cat = c.get("/api/lab/catalog").json()["lessons"]
     lesson = next(x for x in cat if x["title"] not in done and x["upstream_id"].startswith("crs-email"))
     course_before = c.get("/api/learning/courses").json()["courses"]

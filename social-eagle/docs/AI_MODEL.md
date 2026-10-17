@@ -4,6 +4,13 @@
 - **Default model:** Qwen3-4B-Instruct-2507, Q4_K_M GGUF (~2.5 GB file), **Apache-2.0**. Chosen for an 8 GB Mac: one model, one
   inference at a time, `num_ctx=4096`, `temperature=0.1`, non-thinking mode, JSON-schema structured output.
 - **Fallback:** Qwen3-1.7B Q4_K_M (~1.1 GB, Apache-2.0) — faster, weaker; see the measured comparison in `docs/VERIFICATION_REPORT.md`.
+- **Embedding model (optional, recommended):** nomic-embed-text v1.5 F16 GGUF (~270 MB, **Apache-2.0**) for hybrid retrieval
+  (FTS5 keyword ranks fused with embedding-similarity ranks). Without it the app uses keyword-only retrieval. Pulled from Docker Hub
+  `ai/nomic-embed-text-v1.5:137M-F16`, sha256 `f7af6f66802f4df86eda10fe9bbcfc75c39562bed48ef6ace719a251cf1c2fdb`, imported as
+  `se-nomic-embed`. On the Mac: `ollama pull nomic-embed-text` (set `OLLAMA_EMBED_MODEL`), and run Ollama with
+  `OLLAMA_MAX_LOADED_MODELS=2` so the small embedder stays loaded next to the chat model (~0.3 GB extra).
+- Restricted-course detection in hybrid mode uses an embedding-similarity threshold of 0.75 (calibrated on the synthetic material;
+  unrelated questions scored ~0.50–0.72, restricted topics ~0.78–0.86). Re-calibrate on real course material.
 - Excluded: Qwen2.5-3B (research licence restricts commercial use).
 
 ## How the weights were obtained in the build container

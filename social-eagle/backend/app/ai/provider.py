@@ -45,6 +45,8 @@ class LLMProvider(Protocol):
     def chat_json(self, messages: list[dict[str, str]], schema: dict[str, Any], *, timeout_s: float | None = None,
                   max_tokens: int = 400) -> LLMResult: ...
 
+    def embed(self, texts: list[str]) -> tuple[str, list[list[float]]]: ...
+
 
 class CircuitBreaker:
     def __init__(self, threshold: int, cooldown_s: float) -> None:
@@ -88,6 +90,9 @@ class DisabledProvider:
                   max_tokens: int = 400) -> LLMResult:
         raise AIUnavailable("AI provider disabled by configuration")
 
+    def embed(self, texts: list[str]) -> tuple[str, list[list[float]]]:
+        raise AIUnavailable("AI provider disabled by configuration")
+
 
 class OllamaProvider:
     name = "ollama"
@@ -120,10 +125,27 @@ class OllamaProvider:
                     "breaker": self.breaker.state()}
         names = [m.get("name", "") for m in tags]
         present = any(n.split(":")[0] == self.model.split(":")[0] for n in names)
+        emb = any(n.split(":")[0] == self.s.ollama_embed_model.split(":")[0] for n in names)
         return {"ok": present and not self.breaker.state()["open"], "status": "ok" if present else "model_missing",
                 "ollama_version": v, "model": self.model, "model_present": present, "models": names,
+                "embed_model": self.s.ollama_embed_model, "embed_model_present": emb,
+                "retrieval": "hybrid (keyword + embeddings)" if emb else "keyword-only (embedding model not installed)",
                 "digest": self._model_digest() if present else None, "breaker": self.breaker.state(),
                 "num_ctx": self.s.ai_num_ctx}
+
+    def embed(self, texts: list[str]) -> tuple[str, list[list[float]]]:
+        """Embeddings from the local embedding model (separate from the chat model and its breaker)."""
+        model = self.s.ollama_embed_model
+        try:
+            r = self._client.post("/api/embed", json={"model": model, "input": texts, "keep_alive": "30m"}, timeout=60)
+        except httpx.HTTPError as e:
+            raise AIUnavailable(f"Embedding model unreachable: {e.__class__.__name__}") from e
+        if r.status_code != 200:
+            raise AIUnavailable(f"Embedding model {model!r} unavailable (HTTP {r.status_code})")
+        vecs = r.json().get("embeddings") or []
+        if len(vecs) != len(texts):
+            raise AIUnavailable("Embedding response size mismatch")
+        return model, vecs
 
     def chat_json(self, messages: list[dict[str, str]], schema: dict[str, Any], *, timeout_s: float | None = None,
                   max_tokens: int = 400) -> LLMResult:

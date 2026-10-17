@@ -62,9 +62,10 @@ async def upload(
                                      source_path=f"upload:{name}")
     except knowledge.IngestError as e:
         raise HTTPException(400, str(e)) from e
+    emb = knowledge.embed_pending(db)
     notify.audit(db, user.username, "knowledge.upload", doc_key=res.doc_key, version=res.version, status=res.status)
     db.commit()
-    return res.__dict__
+    return {**res.__dict__, "embeddings": emb}
 
 
 class StatusIn(BaseModel):

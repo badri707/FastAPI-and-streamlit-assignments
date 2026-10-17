@@ -124,9 +124,10 @@ def reset_evaluation(settings: Settings | None = None, *, run_sync: bool = True,
     seed_stats = generate(simulator_store(str(s.sim_db_path)), main_members=members)
     with db.session_scope() as session:
         kres = knowledge.ingest_directory(session, PROJECT_ROOT / "seed" / "knowledge")
+        emb = knowledge.embed_pending(session)
     out: dict[str, Any] = {"seed": seed_stats, "knowledge": {
         "docs": len(kres), "chunks": sum(r.chunks for r in kres),
-        "needs_ocr": [r.doc_key for r in kres if r.status == "needs_ocr"]}, "users_preserved": len(users)}
+        "needs_ocr": [r.doc_key for r in kres if r.status == "needs_ocr"], "embeddings": emb}, "users_preserved": len(users)}
     if run_sync:
         with db.session_scope() as session:
             out["sync"] = sync.sync_once(session, get_adapter("simulator", s))

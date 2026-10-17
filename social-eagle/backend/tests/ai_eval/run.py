@@ -58,7 +58,8 @@ def main() -> int:
     if not health.get("ok"):
         print(f"AI not available: {health}", file=sys.stderr)
         return 2
-    spec = json.loads((HERE / "cases.json").read_text())
+    ap_cases = os.environ.get("AI_EVAL_CASES", "cases.json")
+    spec = json.loads((HERE / ap_cases).read_text())
     only = set(filter(None, args.only.split(",")))
     results = []
     with db.session_scope() as session:
@@ -71,6 +72,9 @@ def main() -> int:
             "kavya_lessons": metrics.member_profile(session, session.execute(select(Member).filter_by(upstream_id="syn-mem-scn-silent")).scalar_one().id,
                                                     metrics.default_scope(session, 90, gid))["lessons_marked_complete"],
             "joined_14": metrics.member_totals(session, metrics.default_scope(session, 14, gid))["joined_in_range"],
+            # alternative documented definition used by the segment tool (active members, last 14×24 h)
+            "pending_onboarding": len(metrics.segment_members(session, "pending_onboarding", {}, gid)),
+            "joined_14_segment": len(metrics.segment_members(session, "new_members", {"days": 14}, gid)),
         }
         for case in spec["cases"]:
             if only and case["id"] not in only:
@@ -79,10 +83,13 @@ def main() -> int:
             if case["cat"] == "analytics":
                 r = chat.ask(session, case["q"])
                 answer = r.get("answer") or ""
-                tv = truth.get(case["truth"]) if case["truth"] else None
+                tkey = case["truth"]
+                if tkey == "joined_14" and r.get("tool") == "segment":
+                    tkey = "joined_14_segment"  # truth follows the tool (and definition) actually used
+                tv = truth.get(tkey) if tkey else None
                 ok_tool = r.get("tool") in case["tool"]
                 if case["truth"] is None:
-                    passed = ok_tool and "deleted" not in answer.lower()
+                    passed = ok_tool and "deleted" not in answer.lower() and (r["status"] in ("ok", "unverified_wording"))
                 else:
                     passed = ok_tool and r["status"] == "ok" and str(tv) in answer
                 results.append({"id": case["id"], "cat": case["cat"], "q": case["q"], "status": r["status"], "tool": r.get("tool"),
@@ -130,7 +137,8 @@ def main() -> int:
     out_dir = ROOT / "docs" / "evidence"
     out_dir.mkdir(parents=True, exist_ok=True)
     safe_model = s.ollama_model.replace(":", "_").replace("/", "_")
-    (out_dir / f"ai-eval-{safe_model}.json").write_text(json.dumps({"summary": summary, "results": results}, indent=2))
+    suffix = "" if ap_cases == "cases.json" else "-" + Path(ap_cases).stem
+    (out_dir / f"ai-eval-{safe_model}{suffix}.json").write_text(json.dumps({"summary": summary, "results": results}, indent=2))
     print(json.dumps(summary, indent=2))
     return 0
 

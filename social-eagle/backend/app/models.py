@@ -19,6 +19,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Integer,
+    LargeBinary,
     String,
     Text,
     UniqueConstraint,
@@ -544,3 +545,14 @@ class SyncDeferred(Base):
     attempts: Mapped[int] = mapped_column(Integer, default=0)
     first_seen_at: Mapped[datetime] = mapped_column(DateTime)
     __table_args__ = (UniqueConstraint("source", "entity", "upstream_id", "seq"),)
+
+
+class KnowledgeEmbedding(Base):
+    """Embedding vector (float32 bytes) for a knowledge chunk, per embedding model."""
+
+    __tablename__ = "knowledge_embeddings"
+    chunk_id: Mapped[int] = mapped_column(ForeignKey("knowledge_chunks.id", ondelete="CASCADE"), primary_key=True)
+    model: Mapped[str] = mapped_column(String(120), primary_key=True)
+    dim: Mapped[int] = mapped_column(Integer)
+    vector: Mapped[bytes] = mapped_column(LargeBinary)
+    created_at: Mapped[datetime] = mapped_column(DateTime)

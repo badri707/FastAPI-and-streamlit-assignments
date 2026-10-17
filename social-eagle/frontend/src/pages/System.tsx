@@ -40,6 +40,7 @@ function StatusTab({ sys, act }: { sys: any; act: ReturnType<typeof useAction> }
         </div>
         <div className="card"><h2>Local AI</h2>
           <p><Pill v={sys.ai.status} /> {sys.ai.model} {sys.ai.ollama_version && `· Ollama ${sys.ai.ollama_version}`} · context {sys.ai.num_ctx} · breaker {sys.ai.breaker?.open ? 'OPEN' : 'closed'}</p>
+          {sys.ai.retrieval && <p className="subtle">Retrieval: {sys.ai.retrieval} ({sys.ai.embed_model})</p>}
           <p className="subtle">{sys.ai.detail ?? 'Runs locally via Ollama; no cloud provider is configured. When unavailable, AI features show "unavailable" and the rest of the app keeps working.'}</p></div>
         <div className="card"><h2>Storage</h2>
           <p>{sys.disk.free_mb} MB free at <span className="mono">{sys.disk.data_dir}</span> {sys.disk.low && <Pill v="LOW" kind="bad" />}</p>

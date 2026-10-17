@@ -21,12 +21,15 @@ def _configure_env(data_dir: Path, **extra: str) -> None:
     os.environ.update({
         "DATA_DIR": str(data_dir), "RUN_MODE": "evaluation", "CLOCK_MODE": "frozen",
         "ALLOWED_HOSTS": '["127.0.0.1","localhost","testserver"]', "AI_PROVIDER": "ollama",
-        "LIVE_CONNECTION_AUTHORIZED": "false", **extra,
+        "LIVE_CONNECTION_AUTHORIZED": "false", "OLLAMA_URL": "http://127.0.0.1:9", **extra,  # never touch a real model in unit tests
     })
     from app import clock, db
     from app.ai import provider
     from app.config import get_settings
     from app.connectors.factory import simulator_store
+    from app.services import knowledge
+
+    knowledge._query_vec.cache_clear()
 
     get_settings.cache_clear()
     simulator_store.cache_clear()
@@ -48,6 +51,17 @@ class FakeLLM:
 
     def health(self) -> dict[str, Any]:
         return {"ok": True, "status": "ok", "model": self.model}
+
+    def embed(self, texts: list[str]) -> tuple[str, list[list[float]]]:
+        """Deterministic hashed bag-of-words vectors (TEST DOUBLE for the embedding model)."""
+        import hashlib as _h
+        out = []
+        for t in texts:
+            v = [0.0] * 64
+            for w in re.findall(r"[a-z]+", t.lower().split(":", 1)[-1]):
+                v[int(_h.md5(w.encode()).hexdigest(), 16) % 64] += 1.0
+            out.append(v)
+        return "fake-embed", out
 
     def chat_json(self, messages: list[dict[str, str]], schema: dict[str, Any], *, timeout_s: float | None = None,
                   max_tokens: int = 400) -> Any:

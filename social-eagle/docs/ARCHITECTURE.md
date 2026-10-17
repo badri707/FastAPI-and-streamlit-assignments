@@ -23,7 +23,7 @@ The supervisor restarts a crashed API/worker with backoff (gives up after 5 cras
 | Persistence | `models.py`, Alembic | SQLite, WAL, foreign keys, busy timeout, short transactions, FTS5 (`knowledge_fts`, `posts_fts`). |
 | Sync | `services/sync.py` | Incremental, idempotent, one commit per page, deferred orphans, late-event-safe progress, failures recorded as failures. |
 | Analytics | `services/metrics.py` | Defined metrics, IST day boundaries, staff/bot separation, coverage notes. |
-| Retrieval | `services/knowledge.py` | Versioned docs, chunking, BM25 via FTS5, tier filtering, restricted matches as metadata only. |
+| Retrieval | `services/knowledge.py` | Versioned docs, chunking, hybrid retrieval (FTS5 BM25 + local embeddings, reciprocal rank fusion; keyword-only fallback), tier filtering, restricted matches as metadata only. Embeddings stored in SQLite (`knowledge_embeddings`, float32, L2-normalised). |
 | AI | `ai/provider.py`, `ai/answer.py`, `ai/policy.py`, `ai/chat.py` | Provider interface + Ollama adapter, breaker, structured output, deterministic pre/post policy, owner-chat tools. |
 | Workflows | `services/jobs.py`, `actions.py`, `automation.py`, `handlers.py`, `worker.py` | Durable jobs, dedupe keys, leases, retries, expiry, publish→verify→reconcile, rules with quiet hours/limits. |
 | API/UI | `api/*`, `frontend/` | Session auth + CSRF, validated request bodies, React screens. |

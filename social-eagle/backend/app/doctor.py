@@ -87,6 +87,8 @@ def main(argv: list[str]) -> int:
             names = [m["name"] for m in c.get("/api/tags").json().get("models", [])]
         present = any(n.split(":")[0] == s.ollama_model.split(":")[0] for n in names)
         add((OK if present else WARN, "local AI", f"Ollama {v}; model {s.ollama_model} {'present' if present else 'MISSING — AI features will show unavailable'}"))
+        emb = any(n.split(":")[0] == s.ollama_embed_model.split(":")[0] for n in names)
+        add((OK if emb else WARN, "embeddings", f"{s.ollama_embed_model} {'present (hybrid retrieval)' if emb else 'missing — keyword-only retrieval is used'}"))
     except (httpx.HTTPError, ValueError):
         add((WARN, "local AI", f"Ollama not reachable at {s.ollama_url}. App still runs; AI features show 'unavailable'."))
     if s.external_ssd_path:

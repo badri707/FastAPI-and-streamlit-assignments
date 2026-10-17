@@ -165,6 +165,14 @@ def h_scan_rules(session: Session, job: Job) -> dict[str, Any]:
     return automation.scan_rules(session)
 
 
+def h_embed_chunks(session: Session, job: Job) -> dict[str, Any]:
+    from . import knowledge
+
+    res = knowledge.embed_pending(session)
+    session.commit()
+    return res
+
+
 def h_backup(session: Session, job: Job) -> dict[str, Any]:
     from . import backup
 
@@ -194,6 +202,7 @@ HANDLERS = {
     "reconcile_action": h_reconcile_action,
     "scan_rules": h_scan_rules,
     "backup": h_backup,
+    "embed_chunks": h_embed_chunks,
     "retention": h_retention,
     "daily_summary": h_daily_summary,
 }

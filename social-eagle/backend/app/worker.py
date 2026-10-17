@@ -60,6 +60,8 @@ def schedule(session: Any, now: datetime, sync_interval_s: int) -> None:
                  expires_at=now + timedelta(seconds=sync_interval_s * 3))
     jobs.enqueue(session, "scan_rules", f"scan_rules:{int(now.timestamp() // 300)}", {}, priority=6, max_attempts=2,
                  expires_at=now + timedelta(minutes=15))
+    jobs.enqueue(session, "embed_chunks", f"embed_chunks:{int(now.timestamp() // 600)}", {}, priority=7, max_attempts=1,
+                 expires_at=now + timedelta(minutes=30))
     local = now.replace(tzinfo=UTC).astimezone(IST)
     day = local.date().isoformat()
     if local.hour >= 8:

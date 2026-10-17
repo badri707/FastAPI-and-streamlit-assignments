@@ -11,8 +11,11 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import math
 import re
+from array import array
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -20,7 +23,7 @@ from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 from .. import clock
-from ..models import Course, KnowledgeChunk, KnowledgeDoc
+from ..models import Course, KnowledgeChunk, KnowledgeDoc, KnowledgeEmbedding
 
 ALLOWED_EXT = {".md": "markdown", ".markdown": "markdown", ".txt": "text", ".pdf": "pdf"}
 MAX_BYTES = 5_000_000
@@ -66,7 +69,7 @@ def chunk_text(body: str) -> list[tuple[str | None, str]]:
 
     for para in re.split(r"\n\s*\n", body):
         para = para.strip()
-        if not para:
+        if not para or para.startswith("> SYNTHETIC"):  # provenance labels are not retrievable content
             continue
         if para.startswith("#"):
             flush()
@@ -79,7 +82,7 @@ def chunk_text(body: str) -> list[tuple[str | None, str]]:
             flush()
         buf.append(para)
     flush()
-    return [(h, t) for h, t in chunks if t and not t.startswith("> SYNTHETIC")] or chunks
+    return [(h, t) for h, t in chunks if t]
 
 
 @dataclass
@@ -174,6 +177,76 @@ def ingest_directory(session: Session, directory: Path, dataset: str = "syntheti
 # Retrieval
 # ---------------------------------------------------------------------------------------------
 
+RRF_K = 60  # reciprocal-rank-fusion constant
+
+
+def _vec_bytes(v: list[float]) -> bytes:
+    n = math.sqrt(sum(x * x for x in v)) or 1.0
+    return array("f", [x / n for x in v]).tobytes()  # stored L2-normalised: cosine = dot product
+
+
+def embed_pending(session: Session, batch: int = 16) -> dict[str, Any]:
+    """Embed approved chunks that have no vector for the configured embedding model. Safe to call repeatedly;
+    if the embedding model is unavailable nothing changes and retrieval stays keyword-only."""
+    from ..ai.provider import AIUnavailable, get_provider
+    from ..config import get_settings
+
+    model = get_settings().ollama_embed_model
+    done = select(KnowledgeEmbedding.chunk_id).where(KnowledgeEmbedding.model == model)
+    rows = session.execute(select(KnowledgeChunk.id, KnowledgeChunk.heading, KnowledgeChunk.text)
+                           .join(KnowledgeDoc, KnowledgeDoc.id == KnowledgeChunk.doc_id)
+                           .where(KnowledgeDoc.status == "approved", KnowledgeChunk.id.not_in(done))).all()
+    n = 0
+    try:
+        for i in range(0, len(rows), batch):
+            part = rows[i:i + batch]
+            used, vecs = get_provider().embed([f"search_document: {r.heading or ''}\n{r.text}" for r in part])
+            for r, v in zip(part, vecs, strict=True):
+                session.add(KnowledgeEmbedding(chunk_id=r.id, model=used, dim=len(v), vector=_vec_bytes(v), created_at=clock.now()))
+                n += 1
+            session.flush()
+    except (AIUnavailable, AttributeError) as e:
+        return {"embedded": n, "pending": len(rows) - n, "status": "unavailable", "detail": str(e)}
+    return {"embedded": n, "pending": len(rows) - n, "status": "ok", "model": model}
+
+
+@lru_cache(maxsize=512)
+def _query_vec(model: str, question: str) -> tuple[float, ...] | None:
+    from ..ai.provider import AIUnavailable, get_provider
+
+    try:
+        _m, vecs = get_provider().embed([f"search_query: {question}"])
+    except (AIUnavailable, AttributeError):
+        return None
+    v = vecs[0]
+    n = math.sqrt(sum(x * x for x in v)) or 1.0
+    return tuple(x / n for x in v)
+
+
+def _semantic_ranks(session: Session, question: str, limit: int = 30) -> dict[int, tuple[int, float]]:
+    """chunk_id -> (rank, cosine) for the top `limit` approved chunks by embedding similarity; empty if unavailable."""
+    from ..config import get_settings
+
+    model = get_settings().ollama_embed_model
+    rows = session.execute(select(KnowledgeEmbedding.chunk_id, KnowledgeEmbedding.vector)
+                           .join(KnowledgeChunk, KnowledgeChunk.id == KnowledgeEmbedding.chunk_id)
+                           .join(KnowledgeDoc, KnowledgeDoc.id == KnowledgeChunk.doc_id)
+                           .where(KnowledgeEmbedding.model == model, KnowledgeDoc.status == "approved")).all()
+    if not rows:
+        return {}
+    q = _query_vec(model, question)
+    if q is None:
+        return {}
+    scored = []
+    for cid, blob in rows:
+        v = array("f")
+        v.frombytes(blob)
+        if len(v) == len(q):
+            scored.append((sum(a * b for a, b in zip(q, v, strict=True)), cid))
+    scored.sort(reverse=True)
+    return {cid: (rank, cos) for rank, (cos, cid) in enumerate(scored[:limit], start=1)}
+
+
 @dataclass
 class Passage:
     chunk_id: int
@@ -187,10 +260,12 @@ class Passage:
     course_upstream_id: str | None
     lesson_upstream_id: str | None
     updated_label: str | None
+    cosine: float | None = None
 
     def ref(self) -> dict[str, Any]:
         return {"chunk_id": self.chunk_id, "doc_id": self.doc_id, "doc_key": self.doc_key,
-                "version": self.doc_version, "score": round(self.score, 3)}
+                "version": self.doc_version, "score": round(self.score, 3),
+                "cosine": None if self.cosine is None else round(self.cosine, 3)}
 
 
 def fts_query(question: str) -> str | None:
@@ -220,35 +295,47 @@ def retrieve(
     k: int = 5,
     max_chars: int = 2600,
 ) -> tuple[list[Passage], list[dict[str, Any]]]:
-    """Returns (permitted passages, restricted matches as metadata only)."""
+    """Hybrid retrieval: FTS5 BM25 ranks fused with embedding-similarity ranks (reciprocal rank fusion). Falls back
+    to keyword-only when no embeddings are available. Returns (permitted passages, restricted matches as metadata)."""
     q = fts_query(question)
-    if q is None:
+    lexical: list[int] = []
+    if q is not None:
+        lexical = [r[0] for r in session.execute(
+            text("SELECT c.id FROM knowledge_fts JOIN knowledge_chunks c ON c.id = knowledge_fts.rowid "
+                 "JOIN knowledge_docs d ON d.id = c.doc_id WHERE knowledge_fts MATCH :q AND d.status = 'approved' "
+                 "ORDER BY bm25(knowledge_fts, 2.0, 1.0) LIMIT 30"), {"q": q}).fetchall()]
+    semantic = _semantic_ranks(session, question) if (q is not None or question.strip()) else {}
+    if not lexical and not semantic:
         return [], []
-    rows = session.execute(
-        text(
-            "SELECT c.id, c.doc_id, c.heading, c.text, bm25(knowledge_fts, 2.0, 1.0) AS score, d.doc_key, d.version, "
-            "d.title, d.access_tiers, d.course_upstream_id, d.lesson_upstream_id, d.updated_label "
-            "FROM knowledge_fts JOIN knowledge_chunks c ON c.id = knowledge_fts.rowid "
-            "JOIN knowledge_docs d ON d.id = c.doc_id "
-            "WHERE knowledge_fts MATCH :q AND d.status = 'approved' ORDER BY score LIMIT 40"
-        ),
-        {"q": q},
-    ).fetchall()
+    fused: dict[int, float] = {}
+    for rank, cid in enumerate(lexical, start=1):
+        fused[cid] = fused.get(cid, 0.0) + 1.0 / (RRF_K + rank)
+    for cid, (rank, _cos) in semantic.items():
+        fused[cid] = fused.get(cid, 0.0) + 1.0 / (RRF_K + rank)
+    order = sorted(fused, key=lambda c: -fused[c])
+    rows = {r.id: r for r in session.execute(
+        select(KnowledgeChunk.id, KnowledgeChunk.doc_id, KnowledgeChunk.heading, KnowledgeChunk.text, KnowledgeDoc.doc_key,
+               KnowledgeDoc.version, KnowledgeDoc.title, KnowledgeDoc.access_tiers, KnowledgeDoc.course_upstream_id,
+               KnowledgeDoc.lesson_upstream_id, KnowledgeDoc.updated_label)
+        .join(KnowledgeDoc, KnowledgeDoc.id == KnowledgeChunk.doc_id).where(KnowledgeChunk.id.in_(order))).all()}
+    mode = "hybrid" if semantic else "lexical"
     permitted: list[Passage] = []
     restricted: dict[str, dict[str, Any]] = {}
     used = 0
-    for r in rows:
-        allowed = owner or tier_allows(r.access_tiers, tier, extra_tiers)
-        if not allowed:
+    for cid in order:
+        r = rows[cid]
+        score = round(fused[cid] * 1000, 3)
+        cos = semantic[cid][1] if cid in semantic else None
+        if not (owner or tier_allows(r.access_tiers, tier, extra_tiers)):
             if r.course_upstream_id and r.course_upstream_id not in restricted:
                 course = session.execute(select(Course).filter_by(upstream_id=r.course_upstream_id)).scalars().first()
                 restricted[r.course_upstream_id] = {"course_upstream_id": r.course_upstream_id,
                                                     "course_title": course.title if course else r.course_upstream_id,
-                                                    "required_tiers": r.access_tiers, "score": -float(r.score)}
+                                                    "required_tiers": r.access_tiers, "score": score, "cosine": cos, "mode": mode}
             continue
         if len(permitted) >= k or used + len(r.text) > max_chars:
             continue
-        permitted.append(Passage(r.id, r.doc_id, r.doc_key, r.version, r.title, r.heading, r.text, -float(r.score),
-                                 r.course_upstream_id, r.lesson_upstream_id, r.updated_label))
+        permitted.append(Passage(r.id, r.doc_id, r.doc_key, r.version, r.title, r.heading, r.text, score,
+                                 r.course_upstream_id, r.lesson_upstream_id, r.updated_label, cos))
         used += len(r.text)
     return permitted, list(restricted.values())

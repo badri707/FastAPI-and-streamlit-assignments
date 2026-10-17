@@ -108,3 +108,31 @@ def test_owner_chat_numbers_are_verified(seeded, fake_llm):
 
 def test_seed_files_exist():
     assert len(list(Path(KB).glob("crs-*"))) == 43
+
+
+def test_hybrid_retrieval_and_restricted_classifier(seeded, fake_llm, monkeypatch):
+    from app.ai.answer import classify_restricted
+    from app.config import get_settings
+    monkeypatch.setenv("OLLAMA_EMBED_MODEL", "fake-embed")
+    get_settings.cache_clear()
+    with db.session_scope() as s:
+        res = knowledge.embed_pending(s)
+        assert res["status"] == "ok" and res["embedded"] > 40 and res["pending"] == 0
+        assert knowledge.embed_pending(s)["embedded"] == 0  # idempotent
+        p, restricted = knowledge.retrieve(s, "How many hashtags should a post use?", tier="general")
+        assert "transcript:office-hours-2026-09-15" in [x.doc_key for x in p] and all(x.cosine is not None for x in p if x.doc_key.startswith("transcript"))
+        p2, r2 = knowledge.retrieve(s, "starter offer price first clients testimonials", tier="general")
+        assert r2 and r2[0]["mode"] == "hybrid" and all("Sales" not in x.title for x in p2)
+        strong, best = classify_restricted(p2, [dict(r2[0], cosine=0.9)])
+        assert strong and best
+        weak, best_w = classify_restricted(p2, [dict(r2[0], cosine=0.5)])
+        assert weak == [] and best_w is False
+    get_settings.cache_clear()
+
+
+def test_transcript_chunks_keep_all_paragraphs(seeded):
+    from app.models import KnowledgeChunk
+    with db.session_scope() as s:
+        doc = s.query(KnowledgeDoc).filter_by(doc_key="transcript:office-hours-2026-09-15").one()
+        text = " ".join(c.text for c in s.query(KnowledgeChunk).filter_by(doc_id=doc.id))
+        assert "hashtags" in text and "carousels" in text and "SYNTHETIC" not in text

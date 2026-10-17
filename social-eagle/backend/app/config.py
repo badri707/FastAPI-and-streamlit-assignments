@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     ai_provider: Literal["ollama", "none"] = "ollama"
     ollama_url: str = "http://127.0.0.1:11434"
     ollama_model: str = "se-qwen3-4b"
+    # Optional local embedding model for hybrid retrieval; keyword-only (FTS5) retrieval is used if it is unavailable.
+    ollama_embed_model: str = "nomic-embed-text"
     ai_timeout_s: float = 180.0
     ai_num_ctx: int = 4096
     ai_max_retries: int = 1

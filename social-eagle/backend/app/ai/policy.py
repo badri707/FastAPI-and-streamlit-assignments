@@ -71,7 +71,8 @@ def numbers_in(text: str) -> set[str]:
 
 
 WORD_NUMBERS = {"one": "1", "two": "2", "three": "3", "four": "4", "five": "5", "six": "6", "seven": "7", "eight": "8",
-                "nine": "9", "ten": "10", "twenty": "20", "thirty": "30", "forty": "40", "fifty": "50", "seventy": "70"}
+                "nine": "9", "ten": "10", "twenty": "20", "thirty": "30", "forty": "40", "fifty": "50", "seventy": "70",
+                "half": ".5", "quarter": ".25"}
 
 
 def normalized_numbers(text: str) -> set[str]:
