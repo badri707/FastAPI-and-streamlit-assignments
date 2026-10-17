@@ -79,12 +79,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3071,
+                  "duration": 3837,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-17T20:06:08.440Z",
+                  "startTime": "2026-10-17T20:22:49.706Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -113,12 +113,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 995,
+                  "duration": 1228,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-17T20:06:12.263Z",
+                  "startTime": "2026-10-17T20:22:54.286Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -147,12 +147,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 11478,
+                  "duration": 47317,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-17T20:06:13.263Z",
+                  "startTime": "2026-10-17T20:22:55.520Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -167,7 +167,7 @@
         },
         {
           "title": "progress change updates member report",
-          "ok": false,
+          "ok": true,
           "tags": [],
           "tests": [
             {
@@ -180,53 +180,18 @@
                 {
                   "workerIndex": 0,
                   "parallelIndex": 0,
-                  "status": "failed",
-                  "duration": 1199,
-                  "error": {
-                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m3\u001b[39m\nReceived: \u001b[31m2\u001b[39m",
-                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m3\u001b[39m\nReceived: \u001b[31m2\u001b[39m\n    at /home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/e2e/walkthrough.spec.ts:116:46",
-                    "location": {
-                      "file": "/home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/e2e/walkthrough.spec.ts",
-                      "column": 46,
-                      "line": 116
-                    },
-                    "snippet": "  114 |   await page.goto(`/members/${id}`)\n  115 |   const p1 = await page.request.get(`/api/members/${id}`).then(r => r.json())\n> 116 |   expect(p1.profile.lessons_marked_complete).toBe(p0.profile.lessons_marked_complete + 1)\n      |                                              ^\n  117 |   await page.getByRole('tab', { name: 'Progress' }).click()\n  118 |   await shot(page, '07-progress-updated')\n  119 | })"
-                  },
-                  "errors": [
-                    {
-                      "location": {
-                        "file": "/home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/e2e/walkthrough.spec.ts",
-                        "column": 46,
-                        "line": 116
-                      },
-                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m3\u001b[39m\nReceived: \u001b[31m2\u001b[39m\n\n  114 |   await page.goto(`/members/${id}`)\n  115 |   const p1 = await page.request.get(`/api/members/${id}`).then(r => r.json())\n> 116 |   expect(p1.profile.lessons_marked_complete).toBe(p0.profile.lessons_marked_complete + 1)\n      |                                              ^\n  117 |   await page.getByRole('tab', { name: 'Progress' }).click()\n  118 |   await shot(page, '07-progress-updated')\n  119 | })\n    at /home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/e2e/walkthrough.spec.ts:116:46"
-                    }
-                  ],
+                  "status": "passed",
+                  "duration": 1469,
+                  "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-17T20:06:24.748Z",
+                  "startTime": "2026-10-17T20:23:42.843Z",
                   "annotations": [],
-                  "attachments": [
-                    {
-                      "name": "screenshot",
-                      "contentType": "image/png",
-                      "path": "/home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/test-results/walkthrough-progress-change-updates-member-report/test-failed-1.png"
-                    },
-                    {
-                      "name": "_error-context-0",
-                      "contentType": "text/markdown",
-                      "path": "/home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/test-results/walkthrough-progress-change-updates-member-report/error-context.md"
-                    }
-                  ],
-                  "errorLocation": {
-                    "file": "/home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/e2e/walkthrough.spec.ts",
-                    "column": 46,
-                    "line": 116
-                  }
+                  "attachments": []
                 }
               ],
-              "status": "unexpected"
+              "status": "expected"
             }
           ],
           "id": "500ef8780b21ce3c46c7-e17127bcffc7163d22e8",
@@ -247,25 +212,25 @@
               "projectName": "",
               "results": [
                 {
-                  "workerIndex": -1,
-                  "parallelIndex": -1,
-                  "status": "skipped",
-                  "duration": 0,
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 30682,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-17T20:06:26.027Z",
+                  "startTime": "2026-10-17T20:23:44.319Z",
                   "annotations": [],
                   "attachments": []
                 }
               ],
-              "status": "skipped"
+              "status": "expected"
             }
           ],
           "id": "500ef8780b21ce3c46c7-154add5ef9411ea11689",
           "file": "walkthrough.spec.ts",
-          "line": 121,
+          "line": 124,
           "column": 1
         },
         {
@@ -281,25 +246,25 @@
               "projectName": "",
               "results": [
                 {
-                  "workerIndex": -1,
-                  "parallelIndex": -1,
-                  "status": "skipped",
-                  "duration": 0,
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12289,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-17T20:06:26.027Z",
+                  "startTime": "2026-10-17T20:24:15.006Z",
                   "annotations": [],
                   "attachments": []
                 }
               ],
-              "status": "skipped"
+              "status": "expected"
             }
           ],
           "id": "500ef8780b21ce3c46c7-2303e2b3c2e190389808",
           "file": "walkthrough.spec.ts",
-          "line": 129,
+          "line": 132,
           "column": 1
         }
       ]
@@ -307,11 +272,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-17T20:06:07.257Z",
-    "duration": 18792.513000000003,
-    "expected": 3,
-    "skipped": 2,
-    "unexpected": 1,
+    "startTime": "2026-10-17T20:22:48.743Z",
+    "duration": 98685.535,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
     "flaky": 0
   }
 }

@@ -35,7 +35,7 @@ export default function Overview() {
             <div className="grid cols-2">
               <div className="card">
                 <h2>Daily participation (IST days)</h2>
-                <LineChart labels={labels} series={[
+                <LineChart incompleteLast={d.coverage?.notes?.some((n: string) => n.includes('incomplete'))} labels={labels} series={[
                   { name: 'Comments', values: labels.map(k => c.daily[k].comments), color: '#a4161a' },
                   { name: 'Posts', values: labels.map(k => c.daily[k].posts), color: '#2a2a2c' },
                   { name: 'Contributors', values: labels.map(k => c.daily[k].contributors), color: '#8a8f99' },

@@ -18,7 +18,7 @@ export function Engagement() {
             <div className="grid cols-4" style={{ margin: '10px 0' }}>
               {d.comparison.rows.map((r: any) => <Stat key={r.metric} label={r.metric.replaceAll('_', ' ')} value={r.b} hint={`previous period ${r.a}${r.pct_change != null ? ` (${r.pct_change > 0 ? '+' : ''}${r.pct_change}%)` : ''}`} />)}
             </div>
-            <div className="card"><LineChart labels={labels} series={[{ name: 'Reactions', values: labels.map(k => c.daily[k].reactions), color: '#c9a227' },
+            <div className="card"><LineChart incompleteLast={d.coverage?.notes?.some((n: string) => n.includes('incomplete'))} labels={labels} series={[{ name: 'Reactions', values: labels.map(k => c.daily[k].reactions), color: '#c9a227' },
               { name: 'Comments', values: labels.map(k => c.daily[k].comments), color: '#a4161a' }, { name: 'Posts', values: labels.map(k => c.daily[k].posts), color: '#2a2a2c' }]} /></div>
             <div className="card">
               <h2>Leaderboard (snapshot {d.leaderboard.latest?.slice(0, 10)})</h2>

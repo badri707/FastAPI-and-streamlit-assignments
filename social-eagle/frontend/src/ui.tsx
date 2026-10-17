@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react'
+import { fmtTime } from './api'
 
 export function Loading({ what = 'Loading…' }: { what?: string }) { return <div className="loading" role="status">{what}</div> }
 export function ErrorBox({ error, onRetry }: { error: string; onRetry?: () => void }) {
@@ -44,7 +45,7 @@ export function Pager({ page, pageSize, total, onPage }: { page: number; pageSiz
 }
 
 // Minimal accessible SVG charts (no chart library).
-export function LineChart({ series, height = 180, labels }: { series: { name: string; values: number[]; color: string }[]; height?: number; labels: string[] }) {
+export function LineChart({ series, height = 180, labels, incompleteLast = false }: { series: { name: string; values: number[]; color: string }[]; height?: number; labels: string[]; incompleteLast?: boolean }) {
   const w = 720, h = height, pad = 30
   const max = Math.max(1, ...series.flatMap(s => s.values))
   const n = Math.max(1, labels.length - 1)
@@ -58,10 +59,17 @@ export function LineChart({ series, height = 180, labels }: { series: { name: st
         <text x={4} y={h - pad} fontSize="10" fill="#777">0</text>
         {labels.length > 0 && <><text x={pad} y={h - 8} fontSize="10" fill="#777">{labels[0]}</text>
           <text x={w - pad} y={h - 8} fontSize="10" fill="#777" textAnchor="end">{labels[labels.length - 1]}</text></>}
-        {series.map(s => (
-          <polyline key={s.name} fill="none" stroke={s.color} strokeWidth="2"
-            points={s.values.map((v, i) => `${x(i)},${y(v)}`).join(' ')} />
-        ))}
+        {series.map(s => {
+          const n = s.values.length
+          const solid = incompleteLast && n > 1 ? s.values.slice(0, n - 1) : s.values
+          return (
+            <g key={s.name}>
+              <polyline fill="none" stroke={s.color} strokeWidth="2" points={solid.map((v, i) => `${x(i)},${y(v)}`).join(' ')} />
+              {incompleteLast && n > 1 && <line x1={x(n - 2)} y1={y(s.values[n - 2])} x2={x(n - 1)} y2={y(s.values[n - 1])} stroke={s.color} strokeWidth="2" strokeDasharray="4 4" />}
+            </g>
+          )
+        })}
+        {incompleteLast && <text x={w - pad} y={pad - 8} fontSize="10" fill="#777" textAnchor="end">last day incomplete (dashed)</text>}
       </svg>
       <figcaption className="subtle" style={{ display: 'flex', gap: 14 }}>
         {series.map(s => <span key={s.name}><span style={{ display: 'inline-block', width: 10, height: 10, background: s.color, marginRight: 4 }} />{s.name}</span>)}
@@ -91,7 +99,7 @@ export function Coverage({ c }: { c?: { notes?: string[]; last_sync?: string | n
   if (!c) return null
   return (
     <div className="subtle" style={{ marginTop: 6 }}>
-      Source sync: <Pill v={c.sync_status ?? 'unknown'} /> {c.last_sync ? `last ${new Date(c.last_sync).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST` : ''}
+      Source sync: <Pill v={c.sync_status ?? 'unknown'} /> {c.last_sync ? `last ${fmtTime(c.last_sync)}` : ''}
       {c.notes && c.notes.length > 0 && <ul style={{ margin: '4px 0 0 18px', padding: 0 }}>{c.notes.map(n => <li key={n}>{n}</li>)}</ul>}
     </div>
   )
