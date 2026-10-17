@@ -5,7 +5,9 @@
 source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
 need_venv
 [ $# -ge 1 ] || die "usage: scripts/restore <backup-dir> [target-dir | --replace-live]"
-SRC="$1"; MODE="${2:-}"
+abspath() { (cd "$(dirname "$1")" && printf "%s/%s" "$(pwd)" "$(basename "$1")"); }
+[ -d "$1" ] || die "Backup folder not found: $1"
+SRC="$(abspath "$1")"; MODE="${2:-}"
 DATA="$(setting data_dir)"
 if [ "$MODE" = "--replace-live" ]; then
   if [ -f "$DATA/run/supervisor.pid" ] && kill -0 "$(cat "$DATA/run/supervisor.pid")" 2>/dev/null; then die "Stop the app first: scripts/stop"; fi
@@ -19,7 +21,7 @@ if [ "$MODE" = "--replace-live" ]; then
   done
   rm -rf "$STAGE"; say "Live data replaced from $SRC."
 else
-  TARGET="${MODE:-$DATA/restore-check/$(basename "$SRC")}"
+  if [ -n "$MODE" ]; then mkdir -p "$MODE"; TARGET="$(cd "$MODE" && pwd)"; else TARGET="$DATA/restore-check/$(basename "$SRC")"; fi
   (cd "$BACKEND" && "$PY" -c "import sys,json; from pathlib import Path; from app.services.backup import verify_and_restore as v; print(json.dumps(v(Path(sys.argv[1]), Path(sys.argv[2])), indent=2))" "$SRC" "$TARGET")
   say "Restored into separate directory $TARGET (running data untouched)."
 fi

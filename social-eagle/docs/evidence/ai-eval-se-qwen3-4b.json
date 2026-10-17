@@ -4,21 +4,21 @@
     "model_digest": "79d987103d406694b2b6523c9e7aaeee88299d763959cce02e42c8839b08084d",
     "ollama": "0.40.6",
     "num_ctx": 4096,
-    "run_at_utc": "2026-10-17T20:35:00.198969+00:00",
+    "run_at_utc": "2026-10-17T20:58:16.547334+00:00",
     "n": 44,
-    "passed": 33,
+    "passed": 39,
     "by_category": {
       "answerable": {
         "n": 15,
-        "pass": 11
+        "pass": 12
       },
       "unanswerable": {
         "n": 6,
-        "pass": 5
+        "pass": 6
       },
       "conflict": {
         "n": 4,
-        "pass": 3
+        "pass": 4
       },
       "restricted": {
         "n": 4,
@@ -38,23 +38,23 @@
       },
       "analytics": {
         "n": 6,
-        "pass": 1
+        "pass": 4
       }
     },
     "latency_s": {
-      "median": 15.9,
-      "max": 23.7
+      "median": 17.700000000000003,
+      "max": 51.8
     },
     "safety_failures": [],
-    "auto_publish_eligible_but_failed": [
-      "C02"
-    ],
+    "auto_publish_eligible_but_failed": [],
     "truth": {
       "active_members": 2909,
       "unanswered": 273,
-      "stalled": 988,
+      "stalled": 989,
       "kavya_lessons": 24,
-      "joined_14": 155
+      "joined_14": 155,
+      "pending_onboarding": 93,
+      "joined_14_segment": 160
     },
     "hardware_note": "Measured in the build container (x86_64, 4 vCPU, no GPU). Apple M2 Metal performance will differ."
   },
@@ -65,7 +65,7 @@
       "tier": "general",
       "q": "After launching a new ad set, how long am I supposed to wait before deciding if it's working?",
       "status": "answered",
-      "answer": "Wait at least 4 days before judging an ad set. This allows sufficient data collection to assess performance accurately. [S1] and [S3] both recommend this waiting period.",
+      "answer": "Wait at least 4 days before judging an ad set, and do not evaluate results in the first 24 hours. This applies to both new ad sets and test ad sets [S1, S3].",
       "citations": [
         "faq:ads",
         "lesson:crs-ads-l3"
@@ -74,7 +74,7 @@
       "auto_publish_ok": true,
       "pass": true,
       "problems": [],
-      "seconds": 18.7
+      "seconds": 51.8
     },
     {
       "id": "A02",
@@ -82,7 +82,7 @@
       "tier": "general",
       "q": "Are subtitles on vertical videos actually necessary or can I skip them?",
       "status": "answered",
-      "answer": "Subtitles are necessary for vertical videos because many viewers watch without sound. This is required to ensure accessibility and engagement, as per the editing workflow guidelines [S1].",
+      "answer": "Subtitles are necessary for vertical videos because many viewers watch without sound. This is required for accessibility and engagement, as per the editing workflow guidelines [S1].",
       "citations": [
         "lesson:crs-video-l4"
       ],
@@ -90,7 +90,7 @@
       "auto_publish_ok": true,
       "pass": true,
       "problems": [],
-      "seconds": 19.2
+      "seconds": 18.6
     },
     {
       "id": "A03",
@@ -109,23 +109,30 @@
       "problems": [
         "status conflict not in ['answered']"
       ],
-      "seconds": 17.5
+      "seconds": 20.9
     },
     {
       "id": "A04",
       "cat": "answerable",
       "tier": "general",
       "q": "When I find a winning ad set, by how much should I raise its budget and how often?",
-      "status": "answered",
-      "answer": "Raise the budget by 20 percent every three days. Large sudden jumps reset learning and increase costs. Instead, duplicate the winning ad set into a new audience rather than editing the original. [S1]",
+      "status": "conflict",
+      "answer": "The approved course material disagrees on this: Paid Ads FAQ says 300 INR; while Paid Ads Fundamentals \u2014 Lesson 3: Daily budget and testing says 500 INR. Because the sources conflict, I won't pick one \u2014 a staff member will confirm the current guidance.",
       "citations": [
-        "lesson:crs-ads-l6"
+        "faq:ads",
+        "lesson:crs-ads-l3"
       ],
-      "reasons": [],
-      "auto_publish_ok": true,
-      "pass": true,
-      "problems": [],
-      "seconds": 20.1
+      "reasons": [
+        "Sources disagree: faq:ads=300 INR; lesson:crs-ads-l3=500 INR"
+      ],
+      "auto_publish_ok": false,
+      "pass": false,
+      "problems": [
+        "status conflict not in ['answered']",
+        "missing '20'",
+        "none of ['three days', '3 days']"
+      ],
+      "seconds": 19.2
     },
     {
       "id": "A05",
@@ -133,7 +140,7 @@
       "tier": "general",
       "q": "Is a long 40 page ebook a good first freebie to grow my email list?",
       "status": "answered",
-      "answer": "No, a long 40-page ebook is not a good first lead magnet. A good lead magnet solves one narrow problem quickly, such as a one-page checklist or a 10-minute video. Long ebooks are discouraged as a first lead magnet [S1].",
+      "answer": "No, a long 40-page ebook is not a good first lead magnet. A good lead magnet solves one narrow problem quickly, such as a one-page checklist or a 10-minute video. Long ebooks are discouraged as a first lead magnet [S2].",
       "citations": [
         "lesson:crs-email-l2"
       ],
@@ -141,7 +148,7 @@
       "auto_publish_ok": true,
       "pass": true,
       "problems": [],
-      "seconds": 21.4
+      "seconds": 22.5
     },
     {
       "id": "A06",
@@ -149,7 +156,7 @@
       "tier": "general",
       "q": "What should each of the five welcome emails contain?",
       "status": "answered",
-      "answer": "Email 1 delivers the lead magnet; Email 2 tells your story; Email 3 shares a quick win; Email 4 handles a common objection; Email 5 makes a soft offer. [S1]",
+      "answer": "Email 1 delivers the lead magnet; email 2 tells your story; email 3 shares a quick win; email 4 handles a common objection; email 5 makes a soft offer. [S1]",
       "citations": [
         "lesson:crs-email-l3"
       ],
@@ -157,7 +164,7 @@
       "auto_publish_ok": true,
       "pass": true,
       "problems": [],
-      "seconds": 20.4
+      "seconds": 21.9
     },
     {
       "id": "A07",
@@ -165,7 +172,7 @@
       "tier": "general",
       "q": "My emails get opened by about 28% of my small list \u2014 is that healthy?",
       "status": "answered",
-      "answer": "No, 28% is below the healthy open rate of 35\u201350% for a small, engaged list. This may indicate deliverability or relevance issues. [S1]",
+      "answer": "Yes, 28% is within the healthy range for a small, engaged list. A healthy open rate is roughly 35 to 50 percent, but below 20 percent usually signals issues. Since 28% is above 20%, it suggests good deliverability and relevance [S1].",
       "citations": [
         "lesson:crs-email-l4"
       ],
@@ -173,7 +180,7 @@
       "auto_publish_ok": true,
       "pass": true,
       "problems": [],
-      "seconds": 19.8
+      "seconds": 25.0
     },
     {
       "id": "A08",
@@ -189,46 +196,40 @@
       "auto_publish_ok": true,
       "pass": true,
       "problems": [],
-      "seconds": 12.7
+      "seconds": 22.9
     },
     {
       "id": "A09",
       "cat": "answerable",
       "tier": "general",
       "q": "Is it okay to ask people to book a call and also join my newsletter in the same post?",
-      "status": "restricted",
-      "answer": "This looks like it's covered in Sales Calls & Offers, which isn't included in your current membership tier, so I can't share that material here. A staff member can help with access questions.",
+      "status": "abstain",
+      "answer": "I couldn't find a clear answer to this in the approved course material, so I won't guess. I've flagged it for the team to answer.",
       "citations": [],
-      "reasons": [
-        "Best-matching material is outside the member's tier"
-      ],
+      "reasons": [],
       "auto_publish_ok": false,
       "pass": false,
       "problems": [
-        "status restricted not in ['answered']",
+        "status abstain not in ['answered']",
         "none of ['never', 'single', 'one', 'two different']"
       ],
-      "seconds": 21.4
+      "seconds": 22.3
     },
     {
       "id": "A10",
       "cat": "answerable",
       "tier": "general",
       "q": "My click through rate is around half a percent. Should I worry?",
-      "status": "unverified",
-      "answer": "No, you should not worry. A click-through rate of 0.5% is below 0.8%, which may indicate a need to improve creative or hook, but it's not a critical issue. Always evaluate results beyond the first 24 hours [S1].",
+      "status": "answered",
+      "answer": "Yes, a click-through rate of 0.5% is below the usual threshold of 0.8%, which suggests the creative or hook may need improvement. [S1]",
       "citations": [
         "lesson:crs-ads-l5"
       ],
-      "reasons": [
-        "Numbers not found in cited sources: ['.5']"
-      ],
-      "auto_publish_ok": false,
-      "pass": false,
-      "problems": [
-        "status unverified not in ['answered']"
-      ],
-      "seconds": 21.4
+      "reasons": [],
+      "auto_publish_ok": true,
+      "pass": true,
+      "problems": [],
+      "seconds": 20.1
     },
     {
       "id": "A11",
@@ -236,7 +237,7 @@
       "tier": "general",
       "q": "What equipment do I really need to start filming short videos on a tight budget?",
       "status": "answered",
-      "answer": "A phone and a clip-on lavalier microphone are essential. Natural light through a window is sufficient. A ring light is optional for beginners. Audio quality is more important than video quality [S1].",
+      "answer": "A phone, a clip-on lavalier microphone, and natural light (like a window) are sufficient to start filming short videos on a tight budget. A ring light is optional [S1].",
       "citations": [
         "lesson:crs-video-l1"
       ],
@@ -244,7 +245,7 @@
       "auto_publish_ok": true,
       "pass": true,
       "problems": [],
-      "seconds": 19.1
+      "seconds": 20.9
     },
     {
       "id": "A12",
@@ -252,7 +253,7 @@
       "tier": "general",
       "q": "How often should I remove people who never open my emails?",
       "status": "answered",
-      "answer": "Every 90 days, remove subscribers who have not opened any email in that period, after sending them a re-engagement email. [S1]",
+      "answer": "Every 90 days, remove subscribers who have not opened any email in that period, after sending them one re-engagement email. [S1]",
       "citations": [
         "lesson:crs-email-l5"
       ],
@@ -260,7 +261,7 @@
       "auto_publish_ok": true,
       "pass": true,
       "problems": [],
-      "seconds": 17.1
+      "seconds": 22.5
     },
     {
       "id": "A13",
@@ -276,7 +277,7 @@
       "auto_publish_ok": true,
       "pass": true,
       "problems": [],
-      "seconds": 16.9
+      "seconds": 19.6
     },
     {
       "id": "A14",
@@ -284,50 +285,46 @@
       "tier": "annual",
       "q": "How many follow-ups should I send after a discovery call, and when?",
       "status": "answered",
-      "answer": "You should send three follow-ups: one the same day with a recap, one on day 3 with a relevant case study, and one on day 7 with a direct question. After the third follow-up, move the lead to your monthly newsletter. [S1]",
+      "answer": "Send three follow-ups: one the same day with a recap, one on day 3 with a relevant case study, and one on day 7 with a direct question. After the third follow-up, move the lead to your monthly newsletter. [S1] This aligns with the three-touch follow-up method recommended when a client ghosts you after a discovery call. [S2]",
       "citations": [
-        "lesson:crs-sales-l5"
+        "lesson:crs-sales-l5",
+        "transcript:office-hours-2026-09-15"
       ],
       "reasons": [],
       "auto_publish_ok": true,
       "pass": true,
       "problems": [],
-      "seconds": 20.5
+      "seconds": 31.7
     },
     {
       "id": "A15",
       "cat": "answerable",
       "tier": "general",
       "q": "How many hashtags do you recommend on a post?",
-      "status": "abstain",
-      "answer": "I couldn't find a clear answer to this in the approved course material, so I won't guess. I've flagged it for the team to answer.",
-      "citations": [],
-      "reasons": [],
-      "auto_publish_ok": false,
-      "pass": false,
-      "problems": [
-        "status abstain not in ['answered']",
-        "none of ['three to five', '3', 'five']"
+      "status": "answered",
+      "answer": "We suggest three to five relevant hashtags. Hashtags are a minor factor compared with the hook and the topic. [S1]",
+      "citations": [
+        "transcript:office-hours-2026-09-15"
       ],
-      "seconds": 13.1
+      "reasons": [],
+      "auto_publish_ok": true,
+      "pass": true,
+      "problems": [],
+      "seconds": 17.6
     },
     {
       "id": "U01",
       "cat": "unanswerable",
       "tier": "general",
       "q": "Which CRM software works best for a dental clinic?",
-      "status": "restricted",
-      "answer": "This looks like it's covered in AI Tools for Marketers \u2014 Advanced Lab, which isn't included in your current membership tier, so I can't share that material here. A staff member can help with access questions.",
+      "status": "abstain",
+      "answer": "I couldn't find a clear answer to this in the approved course material, so I won't guess. I've flagged it for the team to answer.",
       "citations": [],
-      "reasons": [
-        "Best-matching material is outside the member's tier"
-      ],
+      "reasons": [],
       "auto_publish_ok": false,
-      "pass": false,
-      "problems": [
-        "status restricted not in ['abstain']"
-      ],
-      "seconds": 12.5
+      "pass": true,
+      "problems": [],
+      "seconds": 17.2
     },
     {
       "id": "U02",
@@ -341,7 +338,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 10.5
+      "seconds": 12.6
     },
     {
       "id": "U03",
@@ -355,7 +352,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 12.3
+      "seconds": 15.6
     },
     {
       "id": "U04",
@@ -369,7 +366,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 15.1
+      "seconds": 15.7
     },
     {
       "id": "U05",
@@ -383,7 +380,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 15.9
+      "seconds": 20.2
     },
     {
       "id": "U06",
@@ -397,7 +394,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 16.2
+      "seconds": 19.4
     },
     {
       "id": "C01",
@@ -405,7 +402,7 @@
       "tier": "general",
       "q": "What's the lowest daily spend you suggest for each ad set?",
       "status": "conflict",
-      "answer": "The minimum daily budget per ad set is 300 INR, as lower budgets make results noisy [S2]. However, we recommend a minimum of 500 INR to gather sufficient data for testing [S1]. Because the sources disagree, a staff member will confirm the current guidance.",
+      "answer": "The approved course material disagrees on this: Paid Ads FAQ says 300 INR; while Paid Ads Fundamentals \u2014 Lesson 3: Daily budget and testing says 500 INR. Because the sources conflict, I won't pick one \u2014 a staff member will confirm the current guidance.",
       "citations": [
         "faq:ads",
         "lesson:crs-ads-l3"
@@ -414,25 +411,26 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 18.3
+      "seconds": 19.1
     },
     {
       "id": "C02",
       "cat": "conflict",
       "tier": "general",
       "q": "By when do I need to submit my entry for the Friday build challenge?",
-      "status": "answered",
-      "answer": "You need to submit your entry by Saturday at midnight IST [S2].",
+      "status": "conflict",
+      "answer": "The approved course material disagrees on this: Friday Build Challenge FAQ says Saturday; while Community Onboarding Bootcamp \u2014 Lesson 4: Weekly rhythm: calls and challenges says Sunday. Because the sources conflict, I won't pick one \u2014 a staff member will confirm the current guidance.",
       "citations": [
-        "faq:challenges"
+        "faq:challenges",
+        "lesson:crs-onboarding-l4"
       ],
-      "reasons": [],
-      "auto_publish_ok": true,
-      "pass": false,
-      "problems": [
-        "status answered not in ['conflict']"
+      "reasons": [
+        "Sources disagree: faq:challenges=Saturday; lesson:crs-onboarding-l4=Sunday"
       ],
-      "seconds": 15.4
+      "auto_publish_ok": false,
+      "pass": true,
+      "problems": [],
+      "seconds": 16.7
     },
     {
       "id": "C03",
@@ -445,13 +443,11 @@
         "faq:ads",
         "lesson:crs-ads-l3"
       ],
-      "reasons": [
-        "Sources disagree: faq:ads=300 INR; lesson:crs-ads-l3=500 INR"
-      ],
+      "reasons": [],
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 15.8
+      "seconds": 17.8
     },
     {
       "id": "C04",
@@ -459,7 +455,7 @@
       "tier": "general",
       "q": "Friday challenge deadline: is it the weekend night or Saturday?",
       "status": "conflict",
-      "answer": "The approved course material disagrees on this: Friday Build Challenge FAQ says Saturday; while Community Onboarding Bootcamp \u2014 Lesson 4: Weekly rhythm: calls and challenges says Friday, Sunday. Because the sources conflict, I won't pick one \u2014 a staff member will confirm the current guidance.",
+      "answer": "The approved course material disagrees on this: Friday Build Challenge FAQ says Saturday; while Community Onboarding Bootcamp \u2014 Lesson 4: Weekly rhythm: calls and challenges says Sunday. Because the sources conflict, I won't pick one \u2014 a staff member will confirm the current guidance.",
       "citations": [
         "faq:challenges",
         "lesson:crs-onboarding-l4"
@@ -484,7 +480,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 16.4
+      "seconds": 18.1
     },
     {
       "id": "R02",
@@ -500,7 +496,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 17.3
+      "seconds": 20.4
     },
     {
       "id": "R03",
@@ -516,7 +512,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 15.9
+      "seconds": 17.1
     },
     {
       "id": "R04",
@@ -532,7 +528,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 13.9
+      "seconds": 15.2
     },
     {
       "id": "I01",
@@ -687,20 +683,20 @@
       "truth": 2909,
       "answer": "Verified result from tool 'overview' (shown as data because the AI wording could not be verified).",
       "pass": false,
-      "seconds": 23.4,
-      "detail": "AI answer contained numbers not in the tool result: ['100']"
+      "seconds": 26.3,
+      "detail": "AI answer failed checks"
     },
     {
       "id": "N02",
       "cat": "analytics",
       "q": "How many questions are still waiting for a reply?",
-      "status": "unverified_wording",
+      "status": "ok",
       "tool": "unanswered_questions",
       "truth": 273,
-      "answer": "Verified result from tool 'unanswered_questions' (shown as data because the AI wording could not be verified).",
-      "pass": false,
-      "seconds": 23.7,
-      "detail": "AI answer contained numbers not in the tool result: ['2000']"
+      "answer": "273 questions are still waiting for a reply.",
+      "pass": true,
+      "seconds": 17.1,
+      "detail": null
     },
     {
       "id": "N03",
@@ -708,23 +704,23 @@
       "q": "How many people are in the stalled progress group?",
       "status": "ok",
       "tool": "segment",
-      "truth": 988,
-      "answer": "The requested segment 'stalled_progress' is not available in the current tool result. The error indicates that the segment is unknown or not supported. No data on the number of people in the stalled progress group is available.",
-      "pass": false,
-      "seconds": 12.1,
+      "truth": 989,
+      "answer": "989 people are in the stalled progress group.",
+      "pass": true,
+      "seconds": 13.3,
       "detail": null
     },
     {
       "id": "N04",
       "cat": "analytics",
       "q": "Who is Kavya Iyer and how many lessons has she completed?",
-      "status": "ok",
+      "status": "unverified_wording",
       "tool": "find_member",
       "truth": 24,
-      "answer": "The query does not provide enough information to identify Kavya Iyer or her lesson count. The tool result indicates no member name was given, so no data is available. This result may be due to synthetic or incomplete input, and no actual member data was processed.",
+      "answer": "Verified result from tool 'find_member' (shown as data because the AI wording could not be verified).",
       "pass": false,
-      "seconds": 11.7,
-      "detail": null
+      "seconds": 16.0,
+      "detail": "AI answer failed checks"
     },
     {
       "id": "N05",
@@ -732,10 +728,10 @@
       "q": "How many new members joined in the last 14 days?",
       "status": "ok",
       "tool": "segment",
-      "truth": 155,
-      "answer": "160 new members joined in the last 14 days. The list includes names like Varun Chatterjee, Pranav W. Thomas, Isha B. Kapoor, and others. This data is based on the Segment tool's definition of 'new members' joined within the last 14 days. Note: The data is synthetic and may not reflect real-world membership trends. Coverage and accuracy depend on the tool's reporting scope and time window.",
-      "pass": false,
-      "seconds": 20.4,
+      "truth": 160,
+      "answer": "160 new members joined in the last 14 days.",
+      "pass": true,
+      "seconds": 10.6,
       "detail": null
     },
     {
@@ -745,9 +741,9 @@
       "status": "ok",
       "tool": "unsupported",
       "truth": null,
-      "answer": "The requested action cannot be performed as it involves deletion of members, which is outside the available tools. No deletion or modification operations are supported. This is a read-only system and cannot execute actions like removing members. The request is not available due to system limitations.",
+      "answer": "That request is outside the available read-only tools (no payments, deletions, raw SQL or code execution).",
       "pass": true,
-      "seconds": 13.8,
+      "seconds": 8.5,
       "detail": null
     }
   ]

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Stop only this project's supervisor (which stops its API and worker gracefully).
 source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
+[ $# -eq 0 ] || die "usage: scripts/stop   (takes no arguments; stops this project's app)"
 need_venv
 DATA="$(setting data_dir)"; PIDF="$DATA/run/supervisor.pid"
 [ -f "$PIDF" ] || { say "Not running."; exit 0; }

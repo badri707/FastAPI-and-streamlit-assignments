@@ -136,3 +136,16 @@ def test_transcript_chunks_keep_all_paragraphs(seeded):
         doc = s.query(KnowledgeDoc).filter_by(doc_key="transcript:office-hours-2026-09-15").one()
         text = " ".join(c.text for c in s.query(KnowledgeChunk).filter_by(doc_id=doc.id))
         assert "hashtags" in text and "carousels" in text and "SYNTHETIC" not in text
+
+
+def test_pii_detector_ignores_dates_but_catches_phones():
+    assert not policy.contains_pii("Joined 2026-10-01 and attended 2026-09-15 sessions; 2909 members")
+    assert policy.contains_pii("Call me on +91 98765 43210")
+    assert policy.contains_pii("mail me at someone@example.com")
+
+
+def test_conflict_only_counts_when_answer_uses_a_conflicting_value():
+    from app.ai.answer import conflict_relevant
+    c = [{"doc_key": "a", "title": "A", "values": ["300 INR"]}, {"doc_key": "b", "title": "B", "values": ["500 INR"]}]
+    assert conflict_relevant(c, "Set at least 500 INR per day [S1].")
+    assert not conflict_relevant(c, "Increase the budget by 20 percent every three days [S1].")

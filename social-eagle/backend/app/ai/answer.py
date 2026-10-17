@@ -126,6 +126,18 @@ def detect_conflict(question: str, passages: list[Passage]) -> list[dict[str, An
     return None
 
 
+def conflict_relevant(conflict: list[dict[str, Any]], answer: str) -> bool:
+    """A detected conflict matters only if the answer states (or depends on) one of the conflicting values."""
+    low = (answer or "").lower()
+    nums = policy.numbers_in(answer)
+    for c in conflict:
+        for v in c["values"]:
+            head = v.split()[0]
+            if head.lower() in low or head.replace(",", "").lstrip("0") in nums:
+                return True
+    return False
+
+
 def conflict_text(conflict: list[dict[str, Any]]) -> str:
     parts = [f"{c['title']} says {', '.join(c['values'])}" for c in conflict]
     return ("The approved course material disagrees on this: " + "; while ".join(parts) +
@@ -233,9 +245,16 @@ def answer_question(
             if bad:
                 status, reasons = "unverified", [*reasons, f"Numbers not found in cited sources: {sorted(bad)}"]
         conflict = detect_conflict(question, passages)
-        if conflict and status in ("answered", "unverified"):
+        if conflict and status in ("answered", "unverified") and conflict_relevant(conflict, answer):
             status, reasons = "conflict", [*reasons, "Sources disagree: " + "; ".join(
                 f"{c['doc_key']}={'/'.join(c['values'])}" for c in conflict)]
+    elif status == "conflict":
+        conflict = detect_conflict(question, passages)
+        if not (conflict and conflict_relevant(conflict, answer)) and valid:
+            # The model reported a conflict the deterministic checker cannot confirm: keep the cited answer as a draft
+            # for staff review (never auto-published) instead of telling the member the sources disagree.
+            status = "answered"
+            reasons = [*reasons, "Model reported a source conflict that the checker could not confirm; staff review"]
     strong_restricted, best_is_restricted = classify_restricted(passages, restricted)
     if strong_restricted and status in ("answered", "unverified") and not best_is_restricted:
         reasons = [*reasons, "Comparable material exists in a course outside the member's tier; staff review before sending"]

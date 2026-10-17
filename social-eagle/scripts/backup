@@ -3,6 +3,7 @@
 source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
 need_venv
 DEST="${1:-}"
+if [ -n "$DEST" ]; then mkdir -p "$DEST"; DEST="$(cd "$DEST" && pwd)"; fi
 cd "$BACKEND" && "$PY" - "$DEST" <<'PY'
 import json, sys
 from pathlib import Path

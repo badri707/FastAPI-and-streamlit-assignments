@@ -89,8 +89,19 @@ def ungrounded_numbers(answer: str, sources: list[str], extra_allowed: set[str] 
     return {n for n in numbers_in(answer) if n not in allowed}
 
 
+DATE_LIKE = re.compile(r"^\d{4}-\d{2}-\d{2}")
+
+
 def contains_pii(text: str) -> bool:
-    return bool(EMAIL_RE.search(text or "") or PHONE_RE.search(text or ""))
+    if EMAIL_RE.search(text or ""):
+        return True
+    for m in PHONE_RE.finditer(text or ""):
+        cand = m.group(1).strip()
+        if DATE_LIKE.match(cand):  # ISO dates are not phone numbers
+            continue
+        if sum(ch.isdigit() for ch in cand) >= 10:
+            return True
+    return False
 
 
 def leaks_system_prompt(text: str) -> bool:

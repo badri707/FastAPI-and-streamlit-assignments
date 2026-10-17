@@ -8,14 +8,19 @@ if [ -f "$RUN/supervisor.pid" ] && kill -0 "$(cat "$RUN/supervisor.pid")" 2>/dev
   say "Already running: http://$HOST:$PORT/"; exit 0
 fi
 [ -f "$FRONTEND/dist/index.html" ] || { say "Building UI…"; (cd "$FRONTEND" && npm run build >/dev/null); }
+rm -f "$RUN/state.json"
 (cd "$BACKEND" && nohup "$PY" -m app.supervisor >>"$DATA/logs/supervisor.log" 2>&1 &)
-for _ in $(seq 1 40); do
-  if curl -fsS --noproxy '*' "http://$HOST:$PORT/api/auth/status" >/dev/null 2>&1; then break; fi
+# Healthy = OUR supervisor (this data dir) is alive, wrote its state after the port check, and the API answers.
+ok=""
+for _ in $(seq 1 60); do
   sleep 0.5
+  if [ -f "$RUN/supervisor.pid" ] && kill -0 "$(cat "$RUN/supervisor.pid")" 2>/dev/null && [ -f "$RUN/state.json" ] \
+     && curl -fsS --noproxy '*' "http://$HOST:$PORT/api/auth/status" >/dev/null 2>&1; then ok=1; break; fi
+  if ! pgrep -f "app.supervisor" >/dev/null 2>&1 && [ ! -f "$RUN/state.json" ]; then break; fi
 done
-if ! curl -fsS --noproxy '*' "http://$HOST:$PORT/api/auth/status" >/dev/null 2>&1; then
-  tail -n 20 "$DATA/logs/supervisor.log" >&2 || true
-  die "API did not become healthy. See $DATA/logs/"
+if [ -z "$ok" ]; then
+  tail -n 5 "$DATA/logs/supervisor.log" >&2 || true
+  die "Social Eagle did not start. See $DATA/logs/supervisor.log"
 fi
 say "Social Eagle is running (Evaluation — synthetic community data)"
 say "  URL:     http://$HOST:$PORT/"
