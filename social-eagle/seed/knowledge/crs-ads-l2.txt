@@ -1,0 +1,17 @@
+---
+doc_key: lesson:crs-ads-l2
+title: Paid Ads Fundamentals — Lesson 2: Audiences and targeting
+course: crs-ads
+lesson: crs-ads-l2
+access_tiers: general,annual
+version: 1
+updated_label: 2026-03 revision
+kind: transcript
+---
+# Paid Ads Fundamentals — Lesson 2: Audiences and targeting
+
+> SYNTHETIC evaluation course material — not actual Social Eagle content.
+
+## Lesson summary
+
+Start with one broad audience and one interest-based audience. Exclude existing customers and recent purchasers. Do not stack many interests in one ad set; give the platform room to optimise.

@@ -1,0 +1,17 @@
+---
+doc_key: lesson:crs-video-l2
+title: Short-Form Video Playbook — Lesson 2: The first three seconds
+course: crs-video
+lesson: crs-video-l2
+access_tiers: general,annual
+version: 1
+updated_label: 2026-03 revision
+kind: transcript
+---
+# Short-Form Video Playbook — Lesson 2: The first three seconds
+
+> SYNTHETIC evaluation course material — not actual Social Eagle content.
+
+## Lesson summary
+
+The first three seconds decide whether people keep watching. Open with movement, on-screen text that names the problem, and start speaking immediately without greetings. Avoid opening with 'Hi guys, welcome back'.

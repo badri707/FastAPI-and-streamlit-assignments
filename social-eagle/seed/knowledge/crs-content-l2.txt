@@ -1,0 +1,17 @@
+---
+doc_key: lesson:crs-content-l2
+title: Content Strategy Foundations — Lesson 2: Content pillars
+course: crs-content
+lesson: crs-content-l2
+access_tiers: general,annual
+version: 1
+updated_label: 2026-03 revision
+kind: transcript
+---
+# Content Strategy Foundations — Lesson 2: Content pillars
+
+> SYNTHETIC evaluation course material — not actual Social Eagle content.
+
+## Lesson summary
+
+Content pillars are three to five recurring themes you always post about. A simple starter set is: education (how-to), proof (results and case studies), personal story, and offer. Aim for roughly 40 percent education, 30 percent proof, 20 percent story and 10 percent direct offer posts.

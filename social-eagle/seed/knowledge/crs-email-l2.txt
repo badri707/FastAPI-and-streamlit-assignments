@@ -1,0 +1,17 @@
+---
+doc_key: lesson:crs-email-l2
+title: Email Marketing Essentials — Lesson 2: Lead magnets that work
+course: crs-email
+lesson: crs-email-l2
+access_tiers: general,annual
+version: 1
+updated_label: 2026-03 revision
+kind: transcript
+---
+# Email Marketing Essentials — Lesson 2: Lead magnets that work
+
+> SYNTHETIC evaluation course material — not actual Social Eagle content.
+
+## Lesson summary
+
+A good lead magnet solves one narrow problem quickly, for example a one-page checklist or a 10-minute video. Avoid long ebooks as a first lead magnet. Name it with the result it delivers, such as 'The 7-Day Reel Plan'.

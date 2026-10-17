@@ -1,0 +1,17 @@
+---
+doc_key: lesson:crs-content-l4
+title: Content Strategy Foundations — Lesson 4: Repurposing one idea five ways
+course: crs-content
+lesson: crs-content-l4
+access_tiers: general,annual
+version: 1
+updated_label: 2026-03 revision
+kind: transcript
+---
+# Content Strategy Foundations — Lesson 4: Repurposing one idea five ways
+
+> SYNTHETIC evaluation course material — not actual Social Eagle content.
+
+## Lesson summary
+
+Repurpose one core idea five ways: a long post, a carousel, a short video, an email, and a question post to spark comments. Start from your best-performing post of the month. Repurposing should happen over about two weeks so the same audience does not see all five versions on the same day.

@@ -1,0 +1,17 @@
+---
+doc_key: lesson:crs-ailab-l4
+title: AI Tools for Marketers — Advanced Lab — Lesson 4: Automation recipes
+course: crs-ailab
+lesson: crs-ailab-l4
+access_tiers: annual,vip
+version: 1
+updated_label: 2026-03 revision
+kind: transcript
+---
+# AI Tools for Marketers — Advanced Lab — Lesson 4: Automation recipes
+
+> SYNTHETIC evaluation course material — not actual Social Eagle content.
+
+## Lesson summary
+
+Automation recipes: connect a form to a spreadsheet, send a welcome email, and notify yourself of new leads. Start with one automation and test it with a dummy submission before going live.

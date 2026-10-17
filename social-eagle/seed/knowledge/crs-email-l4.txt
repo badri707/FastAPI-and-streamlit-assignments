@@ -1,0 +1,17 @@
+---
+doc_key: lesson:crs-email-l4
+title: Email Marketing Essentials — Lesson 4: Subject lines and open rates
+course: crs-email
+lesson: crs-email-l4
+access_tiers: general,annual
+version: 1
+updated_label: 2026-03 revision
+kind: transcript
+---
+# Email Marketing Essentials — Lesson 4: Subject lines and open rates
+
+> SYNTHETIC evaluation course material — not actual Social Eagle content.
+
+## Lesson summary
+
+Good subject lines are under 50 characters, specific and curiosity-driven. Avoid all caps and excessive punctuation. A healthy open rate for a small, engaged list is roughly 35 to 50 percent; below 20 percent usually signals deliverability or relevance problems.

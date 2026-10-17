@@ -1,0 +1,17 @@
+---
+doc_key: lesson:crs-analytics-l4
+title: Analytics & Reporting — Lesson 4: Attribution basics
+course: crs-analytics
+lesson: crs-analytics-l4
+access_tiers: general,annual
+version: 1
+updated_label: 2026-03 revision
+kind: transcript
+---
+# Analytics & Reporting — Lesson 4: Attribution basics
+
+> SYNTHETIC evaluation course material — not actual Social Eagle content.
+
+## Lesson summary
+
+Attribution basics: last-click attribution undervalues content that introduced the client. Ask every new client 'Where did you first hear about us?' and record the answer alongside the last-click source.

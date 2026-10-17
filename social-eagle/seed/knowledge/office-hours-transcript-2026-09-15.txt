@@ -1,0 +1,19 @@
+---
+doc_key: transcript:office-hours-2026-09-15
+title: Office hours transcript — 2026-09-15 (excerpt)
+access_tiers: general,annual
+version: 1
+updated_label: 2026-09-15
+kind: transcript
+---
+# Office hours transcript — 2026-09-15 (excerpt)
+
+> SYNTHETIC transcript excerpt for evaluation.
+
+Host: First question is about Instagram carousels versus reels. For reach to new people, reels are usually stronger; for saves from your existing audience, carousels often win. Use both, but measure saves for carousels and shares for reels.
+
+Host: Second question: how many hashtags? We suggest three to five relevant hashtags. Hashtags are a minor factor compared with the hook and the topic.
+
+Host: Third question: what to do when a client ghosts you after a discovery call. Use the three-touch follow-up, then move them to the newsletter. Do not chase beyond that.
+
+Host: Last question: is it okay to use AI to write captions? Yes as a first draft, but rewrite it in your own voice and check every claim.

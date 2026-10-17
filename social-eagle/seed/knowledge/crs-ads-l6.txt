@@ -1,0 +1,17 @@
+---
+doc_key: lesson:crs-ads-l6
+title: Paid Ads Fundamentals — Lesson 6: Scaling winners
+course: crs-ads
+lesson: crs-ads-l6
+access_tiers: general,annual
+version: 1
+updated_label: 2026-03 revision
+kind: transcript
+---
+# Paid Ads Fundamentals — Lesson 6: Scaling winners
+
+> SYNTHETIC evaluation course material — not actual Social Eagle content.
+
+## Lesson summary
+
+Scale winning ad sets by increasing the budget 20 percent every three days. Large sudden budget jumps reset learning and usually raise costs. Duplicate a winner into a new audience instead of editing a running ad set.

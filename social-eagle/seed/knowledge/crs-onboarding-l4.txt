@@ -1,0 +1,17 @@
+---
+doc_key: lesson:crs-onboarding-l4
+title: Community Onboarding Bootcamp — Lesson 4: Weekly rhythm: calls and challenges
+course: crs-onboarding
+lesson: crs-onboarding-l4
+access_tiers: general,annual
+version: 1
+updated_label: 2026-03 revision
+kind: transcript
+---
+# Community Onboarding Bootcamp — Lesson 4: Weekly rhythm: calls and challenges
+
+> SYNTHETIC evaluation course material — not actual Social Eagle content.
+
+## Lesson summary
+
+The weekly rhythm has two live touchpoints. Office hours run every Tuesday at 7:00 PM IST for 60 minutes; bring one question. The Friday Build Challenge opens every Friday at 10:00 AM IST and you post your result by Sunday night. Recordings of office hours are added to the calendar post within 48 hours.

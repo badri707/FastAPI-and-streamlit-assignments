@@ -1,0 +1,17 @@
+---
+doc_key: lesson:crs-video-l4
+title: Short-Form Video Playbook — Lesson 4: Editing workflow
+course: crs-video
+lesson: crs-video-l4
+access_tiers: general,annual
+version: 1
+updated_label: 2026-03 revision
+kind: transcript
+---
+# Short-Form Video Playbook — Lesson 4: Editing workflow
+
+> SYNTHETIC evaluation course material — not actual Social Eagle content.
+
+## Lesson summary
+
+A simple editing workflow: cut silences, add captions, add one pattern interrupt every 5 to 7 seconds such as a zoom or b-roll, and export in 9:16 vertical format at 1080x1920. Captions are required because many viewers watch without sound.

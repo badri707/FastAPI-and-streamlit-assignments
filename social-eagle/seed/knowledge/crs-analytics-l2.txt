@@ -1,0 +1,17 @@
+---
+doc_key: lesson:crs-analytics-l2
+title: Analytics & Reporting — Lesson 2: Setting up UTM links
+course: crs-analytics
+lesson: crs-analytics-l2
+access_tiers: general,annual
+version: 1
+updated_label: 2026-03 revision
+kind: transcript
+---
+# Analytics & Reporting — Lesson 2: Setting up UTM links
+
+> SYNTHETIC evaluation course material — not actual Social Eagle content.
+
+## Lesson summary
+
+Use UTM parameters on every link you share: utm_source for the platform, utm_medium for the format and utm_campaign for the offer. Keep naming in lowercase with hyphens to avoid duplicated rows in reports.

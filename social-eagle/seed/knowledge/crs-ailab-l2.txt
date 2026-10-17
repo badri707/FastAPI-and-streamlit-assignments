@@ -1,0 +1,17 @@
+---
+doc_key: lesson:crs-ailab-l2
+title: AI Tools for Marketers — Advanced Lab — Lesson 2: Building a content assistant
+course: crs-ailab
+lesson: crs-ailab-l2
+access_tiers: annual,vip
+version: 1
+updated_label: 2026-03 revision
+kind: transcript
+---
+# AI Tools for Marketers — Advanced Lab — Lesson 2: Building a content assistant
+
+> SYNTHETIC evaluation course material — not actual Social Eagle content.
+
+## Lesson summary
+
+Build a content assistant by saving a reusable instruction document with your niche, offer, tone rules and banned phrases. Paste it at the start of each session. Review the instruction document monthly.

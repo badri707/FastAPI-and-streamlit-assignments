@@ -1,0 +1,5 @@
+{
+  "_note": "Metadata for knowledge files without front matter (PDFs). SYNTHETIC.",
+  "community-guidelines.pdf": {"doc_key": "pdf:community-guidelines", "title": "Community Guidelines (PDF)", "access_tiers": "*", "updated_label": "2026-01"},
+  "scanned-welcome-letter.pdf": {"doc_key": "pdf:scanned-welcome-letter", "title": "Scanned welcome letter (image-only PDF)", "access_tiers": "*", "updated_label": "2026-01"}
+}

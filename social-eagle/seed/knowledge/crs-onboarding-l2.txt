@@ -1,0 +1,17 @@
+---
+doc_key: lesson:crs-onboarding-l2
+title: Community Onboarding Bootcamp — Lesson 2: Setting up your profile
+course: crs-onboarding
+lesson: crs-onboarding-l2
+access_tiers: general,annual
+version: 1
+updated_label: 2026-03 revision
+kind: transcript
+---
+# Community Onboarding Bootcamp — Lesson 2: Setting up your profile
+
+> SYNTHETIC evaluation course material — not actual Social Eagle content.
+
+## Lesson summary
+
+Use your real first name and a clear face photo on your profile. Add a one-line bio that names who you help, for example 'I help yoga studios fill weekday classes'. Link one primary social account only. Profiles with a photo and bio receive noticeably more replies in the community, so complete this before posting your first question.

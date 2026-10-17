@@ -1,0 +1,17 @@
+---
+doc_key: lesson:crs-content-l6
+title: Content Strategy Foundations — Lesson 6: Measuring content performance
+course: crs-content
+lesson: crs-content-l6
+access_tiers: general,annual
+version: 1
+updated_label: 2026-03 revision
+kind: transcript
+---
+# Content Strategy Foundations — Lesson 6: Measuring content performance
+
+> SYNTHETIC evaluation course material — not actual Social Eagle content.
+
+## Lesson summary
+
+Measure content with three numbers: saves, comments from your target audience, and profile visits. Likes alone are a weak signal. Review the numbers every Friday and keep a 'top five posts' list so you know what to repurpose next month.

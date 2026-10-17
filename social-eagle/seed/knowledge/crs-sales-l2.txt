@@ -1,0 +1,17 @@
+---
+doc_key: lesson:crs-sales-l2
+title: Sales Calls & Offers — Lesson 2: Pricing your offer
+course: crs-sales
+lesson: crs-sales-l2
+access_tiers: annual
+version: 1
+updated_label: 2026-03 revision
+kind: transcript
+---
+# Sales Calls & Offers — Lesson 2: Pricing your offer
+
+> SYNTHETIC evaluation course material — not actual Social Eagle content.
+
+## Lesson summary
+
+Pricing your starter offer: for the first 20 clients, price the starter offer between 4,000 and 8,000 INR. Raise the price by 20 percent after every five testimonials. Never discount more than 15 percent; add bonuses instead of cutting price.

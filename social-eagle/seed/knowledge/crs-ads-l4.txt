@@ -1,0 +1,17 @@
+---
+doc_key: lesson:crs-ads-l4
+title: Paid Ads Fundamentals — Lesson 4: Creative testing
+course: crs-ads
+lesson: crs-ads-l4
+access_tiers: general,annual
+version: 1
+updated_label: 2026-03 revision
+kind: transcript
+---
+# Paid Ads Fundamentals — Lesson 4: Creative testing
+
+> SYNTHETIC evaluation course material — not actual Social Eagle content.
+
+## Lesson summary
+
+Test creatives in batches of three to five variations per ad set. Change only the creative while keeping audience and budget fixed. Turn off creatives that have spent twice your target cost per lead without a result.

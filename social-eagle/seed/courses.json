@@ -1,0 +1,22 @@
+{
+  "_note": "SYNTHETIC evaluation curriculum. Not actual Social Eagle courses or policies.",
+  "courses": [
+    {"id": "crs-onboarding", "title": "Community Onboarding Bootcamp", "tiers": "general,annual", "description": "How to get started in the community.",
+     "lessons": ["Welcome and community rules", "Setting up your profile", "How to ask a good question", "Weekly rhythm: calls and challenges", "Your first 30-day plan"]},
+    {"id": "crs-content", "title": "Content Strategy Foundations", "tiers": "general,annual", "description": "Planning content that attracts clients.",
+     "lessons": ["Choosing your niche", "Content pillars", "The hook-story-offer framework", "Repurposing one idea five ways", "Building a content calendar", "Measuring content performance"]},
+    {"id": "crs-video", "title": "Short-Form Video Playbook", "tiers": "general,annual", "description": "Reels and shorts that convert.",
+     "lessons": ["Gear on a budget", "The first three seconds", "Scripting short videos", "Editing workflow", "Posting cadence for video", "Turning views into leads"]},
+    {"id": "crs-email", "title": "Email Marketing Essentials", "tiers": "general,annual", "description": "Building and nurturing an email list.",
+     "lessons": ["Why email still matters", "Lead magnets that work", "The five-email welcome sequence", "Subject lines and open rates", "List hygiene and deliverability"]},
+    {"id": "crs-ads", "title": "Paid Ads Fundamentals", "tiers": "general,annual", "description": "Running your first profitable ad campaigns.",
+     "lessons": ["Ad account setup", "Audiences and targeting", "Daily budget and testing", "Creative testing", "Reading ad metrics", "Scaling winners"]},
+    {"id": "crs-sales", "title": "Sales Calls & Offers", "tiers": "annual", "description": "Annual-tier course on offers and sales conversations.",
+     "lessons": ["Designing a starter offer", "Pricing your offer", "The discovery call script", "Handling objections", "Follow-up system"]},
+    {"id": "crs-analytics", "title": "Analytics & Reporting", "tiers": "general,annual", "description": "Tracking what matters.",
+     "lessons": ["Metrics that matter", "Setting up UTM links", "Weekly reporting template", "Attribution basics", "Monthly review ritual"]},
+    {"id": "crs-ailab", "title": "AI Tools for Marketers — Advanced Lab", "tiers": "annual,vip", "description": "Annual/VIP lab on AI-assisted marketing workflows.",
+     "lessons": ["Prompt patterns for copy", "Building a content assistant", "AI image workflows", "Automation recipes", "Quality control for AI output"]}
+  ],
+  "tiers": {"general": "SYNTHETIC general membership (monthly)", "annual": "SYNTHETIC annual membership", "vip": "SYNTHETIC VIP add-on"}
+}
