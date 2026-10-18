@@ -97,3 +97,11 @@ def test_notes_tags_and_member_erasure_survive_resync(client: TestClient):
     client.post("/api/lab/progress", json={"member_upstream_id": "syn-mem-scn-silent", "lesson_upstream_id": "crs-ailab-l1"})
     after = client.get(f"/api/members/{mid}").json()
     assert after["member"]["display_name"].startswith("Erased member") and after["notes"] == []
+
+
+def test_post_search_ranks_matches_and_includes_new_posts(client: TestClient):
+    r = client.post("/api/lab/question", json={"member_upstream_id": "syn-mem-scn-support", "title": "Zebra email question",
+                                                "body": "A unique zebra email question for search."})
+    assert r.status_code == 200
+    rows = client.get("/api/posts", params={"q": "zebra email"}).json()["rows"]
+    assert rows and rows[0]["title"] == "Zebra email question"

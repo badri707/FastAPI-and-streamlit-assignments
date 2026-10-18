@@ -212,3 +212,26 @@ def test_second_worker_process_exits_due_to_lock(seeded):
     r = subprocess.run([sys.executable, "-m", "app.worker"], env=env, capture_output=True, text=True, timeout=60)
     assert r.returncode == 3, r.stdout + r.stderr
     lock.close()
+
+
+def test_worker_survives_a_long_database_lock(seeded, monkeypatch):
+    """Another connection holds the write lock longer than the busy timeout: the worker logs and keeps running."""
+    import threading
+
+    from sqlalchemy import exc
+    calls = {"n": 0}
+    real = worker._iteration
+
+    def flaky(*a, **k):  # first iteration hits a lock timeout, later ones work
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise exc.OperationalError("UPDATE jobs ...", {}, sqlite3.OperationalError("database is locked"))
+        return real(*a, **k)
+
+    monkeypatch.setattr(worker, "_iteration", flaky)
+    monkeypatch.setattr(worker, "acquire_lock", lambda _p: object())
+    monkeypatch.setattr(worker.signal, "signal", lambda *a: None)
+    t = threading.Thread(target=worker.main, kwargs={"max_iterations": 3})
+    t.start()
+    t.join(60)
+    assert not t.is_alive() and calls["n"] == 3

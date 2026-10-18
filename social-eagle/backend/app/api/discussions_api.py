@@ -42,7 +42,7 @@ def list_posts(
     if q:
         fq = fts_query(q)
         if fq:
-            ids = [r[0] for r in db.execute(text("SELECT rowid FROM posts_fts WHERE posts_fts MATCH :q LIMIT 500"), {"q": fq})]
+            ids = [r[0] for r in db.execute(text("SELECT rowid FROM posts_fts WHERE posts_fts MATCH :q ORDER BY rank LIMIT 500"), {"q": fq})]
             qy = select(Post).where(Post.group_id == gid, Post.id.in_(ids))
     total = db.execute(select(func.count()).select_from(qy.subquery())).scalar()
     rows = db.execute(qy.order_by(Post.created_at.desc()).offset((page - 1) * page_size).limit(page_size)).scalars().all()

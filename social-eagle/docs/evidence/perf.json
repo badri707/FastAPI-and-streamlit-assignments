@@ -1,0 +1,125 @@
+{
+  "measured_at_utc": "2026-10-17T21:37:02.290886+00:00",
+  "environment": {
+    "note": "Build container: x86_64, 4 vCPU, ~16 GB RAM, no GPU. NOT the owner's MacBook Air M2 (8 GB). Re-run on the Mac before drawing capacity conclusions.",
+    "platform": {
+      "python": "3.12.3",
+      "machine": "x86_64",
+      "system": "Linux"
+    },
+    "model": "se-qwen3-4b",
+    "num_ctx": 4096
+  },
+  "dataset": {
+    "members": null
+  },
+  "api_latency": {
+    "/api/overview?days=30": {
+      "p50_ms": 319.6,
+      "p95_ms": 375.9,
+      "max_ms": 409.5
+    },
+    "/api/members?page_size=50": {
+      "p50_ms": 75.7,
+      "p95_ms": 81.4,
+      "max_ms": 104.8
+    },
+    "/api/members?q=Sharma": {
+      "p50_ms": 74.0,
+      "p95_ms": 98.3,
+      "max_ms": 112.5
+    },
+    "/api/members?sort=last_contribution&desc=true": {
+      "p50_ms": 75.2,
+      "p95_ms": 82.7,
+      "max_ms": 163.6
+    },
+    "/api/support?unanswered=true": {
+      "p50_ms": 74.2,
+      "p95_ms": 353.2,
+      "max_ms": 403.3
+    },
+    "/api/posts": {
+      "p50_ms": 59.6,
+      "p95_ms": 76.3,
+      "max_ms": 84.4
+    },
+    "/api/learning/courses": {
+      "p50_ms": 114.9,
+      "p95_ms": 122.8,
+      "max_ms": 158.2
+    },
+    "/api/events": {
+      "p50_ms": 41.8,
+      "p95_ms": 138.7,
+      "max_ms": 140.6
+    },
+    "/api/engagement?days=30": {
+      "p50_ms": 597.9,
+      "p95_ms": 684.2,
+      "max_ms": 731.1
+    },
+    "/api/reports/summary?period=weekly": {
+      "p50_ms": 253.6,
+      "p95_ms": 354.9,
+      "max_ms": 356.1
+    },
+    "/api/segments": {
+      "p50_ms": 557.8,
+      "p95_ms": 581.6,
+      "max_ms": 659.5
+    },
+    "/api/learning/stalled": {
+      "p50_ms": 732.0,
+      "p95_ms": 817.0,
+      "max_ms": 852.5
+    },
+    "/api/reports/export/daily": {
+      "p50_ms": 192.7,
+      "p95_ms": 314.1,
+      "max_ms": 332.5
+    },
+    "/api/system/status": {
+      "p50_ms": 10.7,
+      "p95_ms": 14.1,
+      "max_ms": 16.2
+    }
+  },
+  "memory_rss_mb_before": {
+    "api": 133.2,
+    "worker": 63.0,
+    "ollama": 3465.4
+  },
+  "memory_rss_mb_peak_during_burst": {
+    "api": 133.2,
+    "worker": 71.3,
+    "ollama": 4558.0
+  },
+  "incremental_sync": {
+    "events": 100,
+    "wall_ms": 198.9,
+    "result": {
+      "status": "ok",
+      "applied": 100,
+      "pages": 1
+    }
+  },
+  "question_burst": {
+    "n": 20,
+    "processed": 20,
+    "drain_seconds": 381.8,
+    "max_queue_age_s": 376.5,
+    "states": {
+      "drafted": 17,
+      "verified": 3
+    },
+    "answer_statuses": {
+      "answered": 20
+    }
+  },
+  "ai_latency_ms_recent": {
+    "n": 24,
+    "median": 18615,
+    "max": 31062
+  }
+}

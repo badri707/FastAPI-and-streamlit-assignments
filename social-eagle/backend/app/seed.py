@@ -289,7 +289,8 @@ def generate(store: SimulatorStore, main_members: int = DEFAULT_MAIN_MEMBERS) ->
         for c in rng.sample(recent_c, min(len(recent_c), max(12, main_members // 20))):
             reactor = rng.choice(members)
             rt = datetime.fromisoformat(c["created_at"]) + timedelta(minutes=rng.randint(5, 300))
-            if reactor["group_id"] == c["group_id"] and reactor["upstream_id"] != c["author_id"] and rt < ANCHOR and active_on(reactor, rt):
+            silent = rates[meta[reactor["upstream_id"]]["archetype"]] == (0, 0, 0)  # silent learners, bot, new-silent
+            if not silent and reactor["group_id"] == c["group_id"] and reactor["upstream_id"] != c["author_id"] and rt < ANCHOR and active_on(reactor, rt):
                 reactions.append({"upstream_id": g.nid("rxn"), "group_id": c["group_id"], "post_id": c["upstream_id"],
                                   "member_id": reactor["upstream_id"], "kind": "like", "created_at": _iso(rt), "deleted_at": None})
 

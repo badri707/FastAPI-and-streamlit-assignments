@@ -1,0 +1,88 @@
+{
+  "run_at_utc": "2026-10-17T21:29:37.711910+00:00",
+  "all_passed": true,
+  "steps": [
+    {
+      "step": "1. add synthetic question",
+      "expected": "question stored in simulator and synced",
+      "actual": "syn-post-live-00006; sync ok",
+      "pass": true
+    },
+    {
+      "step": "2. grounded answer generated",
+      "expected": "status answered, cites Email Marketing lesson 5 (90 days)",
+      "actual": "answer_status=answered; cites=['Email Marketing Essentials \u2014 Lesson 5: List hygiene and deliverability']; '90' in body=True; 9.2s",
+      "pass": true,
+      "body": "\ud83e\udd16 Automated answer from Eagle Assistant (not the mentor).\n\nEvery 90 days, after sending a re-engagement email to subscribers who haven't opened any email in that period.\n\nSources: [S1] Email Marketing Essentials \u2014 Lesson 5: List hygiene and deliverability\n\nA staff member can correct this answer.",
+      "ai_run": {
+        "id": 4,
+        "status": "answered",
+        "model": "se-qwen3-4b",
+        "digest": "79d987103d406694b2b",
+        "policy_version": "answer-policy-2026.10.1",
+        "retrieved": [
+          {
+            "chunk_id": 28,
+            "doc_id": 28,
+            "doc_key": "lesson:crs-email-l5",
+            "version": 1,
+            "score": 32.787,
+            "cosine": 0.811
+          },
+          {
+            "chunk_id": 24,
+            "doc_id": 24,
+            "doc_key": "lesson:crs-email-l1",
+            "version": 1,
+            "score": 32.258,
+            "cosine": 0.686
+          },
+          {
+            "chunk_id": 26,
+            "doc_id": 26,
+            "doc_key": "lesson:crs-email-l3",
+            "version": 1,
+            "score": 31.746,
+            "cosine": 0.647
+          },
+          {
+            "chunk_id": 1,
+            "doc_id": 1,
+            "doc_key": "pdf:community-guidelines",
+            "version": 1,
+            "score": 29.911,
+            "cosine": 0.626
+          },
+          {
+            "chunk_id": 44,
+            "doc_id": 44,
+            "doc_key": "lesson:crs-video-l6",
+            "version": 1,
+            "score": 29.71,
+            "cosine": 0.574
+          }
+        ],
+        "latency_ms": 8076,
+        "detail": null
+      }
+    },
+    {
+      "step": "3. published in local thread",
+      "expected": "state verified; automated reply visible in thread; exactly 1 bot reply in simulator",
+      "actual": "path: auto-published by the evaluation rule; state=verified; visible=True; simulator bot replies=1",
+      "pass": true
+    },
+    {
+      "step": "4. worker crash + restart + job replay",
+      "expected": "worker restarted by supervisor; replayed publish is a no-op; still exactly 1 reply",
+      "actual": "old pid 9939 \u2192 new pid 9964; worker alive; simulator bot replies=1",
+      "pass": true
+    },
+    {
+      "step": "5. progress change reflected in reports",
+      "expected": "lessons_marked_complete +1 on member profile; course report updated from same DB",
+      "actual": "crs-ads-l5: 26 \u2192 27; course report: members marked complete for this lesson 33 \u2192 34",
+      "pass": true
+    }
+  ]
+}

@@ -65,12 +65,22 @@ def main() -> int:
     step("2. grounded answer generated", "status answered, cites Email Marketing lesson 5 (90 days)",
          f"answer_status={action['answer_status']}; cites={cites}; '90' in body={'90' in (action['body'] or '')}; {took}s",
          action["answer_status"] == "answered" and any("Email" in t for t in cites), body=action["body"], ai_run=action.get("ai_run"))
-    thread = c.get("/api/posts", params={"q": "Demo email list cleaning"}).json()
+    path = "auto-published by the evaluation rule"
+    if action["state"] in ("drafted", "held"):
+        # The policy held it for review (e.g. an unconfirmed conflict). Approve it as the owner would in the review queue.
+        path = f"held for review ({action.get('auto_blocked_reason') or action['answer_status']}); approved by owner"
+        c.post(f"/api/actions/{action['id']}/approve").raise_for_status()
+        for _ in range(120):
+            time.sleep(2)
+            action = c.get(f"/api/actions/{action['id']}").json()
+            if action["state"] in ("verified", "failed", "cancelled", "held"):
+                break
+    thread = c.get("/api/posts", params={"q": "Demo email list cleaning", "page_size": 100}).json()
     pid = next((p["id"] for p in thread["rows"] if p["upstream_id"] == post_up), None)
     t = c.get(f"/api/threads/{pid}").json() if pid else {"thread": {"children": []}}
     visible = any(ch["is_automated"] for ch in t["thread"]["children"])
     step("3. published in local thread", "state verified; automated reply visible in thread; exactly 1 bot reply in simulator",
-         f"state={action['state']}; visible={visible}; simulator bot replies={bot_replies(post_up)}",
+         f"path: {path}; state={action['state']}; visible={visible}; simulator bot replies={bot_replies(post_up)}",
          action["state"] == "verified" and visible and bot_replies(post_up) == 1)
     state = json.loads((ROOT / "data" / "run" / "state.json").read_text())
     old_pid = state["pids"]["worker"]
@@ -98,16 +108,20 @@ def main() -> int:
     before = c.get(f"/api/members/{mem['id']}").json()
     done = {ls["title"] for cc in before["progress"] if cc["accessible"] for ls in cc["lesson_states"] if ls["completed"]}
     cat = c.get("/api/lab/catalog").json()["lessons"]
-    lesson = next(x for x in cat if x["title"] not in done and x["upstream_id"].startswith("crs-email"))
-    course_before = c.get("/api/learning/courses").json()["courses"]
-    started_before = {x["upstream_id"]: x["started"] for x in course_before}
+    accessible = {ls["title"] for cc in before["progress"] if cc["accessible"] for ls in cc["lesson_states"]}
+    lesson = next(x for x in cat if x["title"] in accessible and x["title"] not in done)
+    course_id = next(x["course_id"] for x in c.get("/api/learning/courses").json()["courses"]
+                     if lesson["upstream_id"].startswith(x["upstream_id"] + "-"))
+    lesson_count = lambda: next(x["members_marked_complete"] for x in c.get(f"/api/learning/courses/{course_id}").json()["lessons"]  # noqa: E731
+                                if x["upstream_id"] == lesson["upstream_id"])
+    lc_before = lesson_count()
     c.post("/api/lab/progress", json={"member_upstream_id": "syn-mem-scn-annual-asker", "lesson_upstream_id": lesson["upstream_id"]}).raise_for_status()
     after = c.get(f"/api/members/{mem['id']}").json()
-    course_after = {x["upstream_id"]: x["started"] for x in c.get("/api/learning/courses").json()["courses"]}
+    lc_after = lesson_count()
     step("5. progress change reflected in reports", "lessons_marked_complete +1 on member profile; course report updated from same DB",
          f"{lesson['upstream_id']}: {before['profile']['lessons_marked_complete']} → {after['profile']['lessons_marked_complete']}; "
-         f"crs-email started {started_before.get('crs-email')} → {course_after.get('crs-email')}",
-         after["profile"]["lessons_marked_complete"] == before["profile"]["lessons_marked_complete"] + 1)
+         f"course report: members marked complete for this lesson {lc_before} → {lc_after}",
+         after["profile"]["lessons_marked_complete"] == before["profile"]["lessons_marked_complete"] + 1 and lc_after == lc_before + 1)
     out = {"run_at_utc": datetime.now(UTC).isoformat(), "all_passed": all(s["pass"] for s in steps), "steps": steps}
     (ROOT / "docs" / "evidence" / "demo.json").write_text(json.dumps(out, indent=2))
     print(json.dumps({"all_passed": out["all_passed"]}))

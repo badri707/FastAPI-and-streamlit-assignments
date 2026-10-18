@@ -23,13 +23,13 @@ def _set_pragmas(dbapi_conn, _record) -> None:  # type: ignore[no-untyped-def]
     cur.execute("PRAGMA foreign_keys=ON")
     cur.execute("PRAGMA journal_mode=WAL")
     cur.execute("PRAGMA synchronous=NORMAL")
-    cur.execute("PRAGMA busy_timeout=5000")
+    cur.execute("PRAGMA busy_timeout=30000")  # wait up to 30 s for another writer (API + worker share the DB)
     cur.close()
 
 
 def make_engine(path: Path) -> Engine:
     path.parent.mkdir(parents=True, exist_ok=True)
-    eng = create_engine(f"sqlite:///{path}", connect_args={"check_same_thread": False, "timeout": 10})
+    eng = create_engine(f"sqlite:///{path}", connect_args={"check_same_thread": False, "timeout": 30})
     event.listen(eng, "connect", _set_pragmas)
     return eng
 

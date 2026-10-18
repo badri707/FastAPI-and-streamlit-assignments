@@ -139,10 +139,10 @@ class SimulatorStore:
             c.executescript(SCHEMA)
 
     def connect(self) -> sqlite3.Connection:
-        c = sqlite3.connect(self.path, timeout=10, isolation_level=None)
+        c = sqlite3.connect(self.path, timeout=30, isolation_level=None)
         c.row_factory = sqlite3.Row
         c.execute("PRAGMA journal_mode=WAL")
-        c.execute("PRAGMA busy_timeout=5000")
+        c.execute("PRAGMA busy_timeout=30000")
         return c
 
     # ---- generic mutation with change-feed emission -------------------------------------------

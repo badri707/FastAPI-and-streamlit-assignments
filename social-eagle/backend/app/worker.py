@@ -21,6 +21,7 @@ from logging.handlers import RotatingFileHandler
 from typing import Any
 
 from sqlalchemy import select
+from sqlalchemy.exc import OperationalError
 
 from . import clock, db
 from .config import get_settings
@@ -148,30 +149,44 @@ def main(max_iterations: int | None = None) -> int:
         it += 1
         gap = time.time() - last_wall
         last_wall = time.time()
-        with db.session_scope() as session:
-            if gap > 120:
-                log.warning("wall-clock gap of %.0fs detected (sleep/suspend?) — applying catch-up rules", gap)
-                notify.info(session, "Worker resumed after a pause", f"No processing for ~{gap / 60:.0f} min (sleep, "
-                            "shutdown or suspension). Outdated jobs are expired instead of sent in a burst.")
-                session.commit()
-                expire_outdated(session)
-            if time.time() - last_sched >= 15:
-                schedule(session, clock.now(), s.sync_interval_s)
+        ran_job = False
+        try:
+            ran_job, scheduled = _iteration(gap, worker_id, started, s, last_sched)
+            if scheduled:
                 last_sched = time.time()
-            job = jobs.lease(session, worker_id, s.worker_lease_s)
-            heartbeat(session, worker_id, started, "running" if job else "idle", f"{job.kind}#{job.id}" if job else None)
-            if job is not None:
-                log.info("running job %s %s", job.id, job.dedupe_key)
-                run_job(session, job)
-                heartbeat(session, worker_id, started, "idle", None)
+        except OperationalError as e:  # e.g. database locked by a long writer: transient, retry next loop
+            log.warning("database busy (%s); retrying", getattr(e, "orig", e))
         if max_iterations and it >= max_iterations:
             break
-        if job is None:
+        if not ran_job:
             time.sleep(s.worker_poll_s)
     with db.session_scope() as session:
         heartbeat(session, worker_id, started, "stopped", None)
     log.info("worker %s stopped", worker_id)
     return 0
+
+
+def _iteration(gap: float, worker_id: str, started: datetime, s: Any, last_sched: float) -> tuple[bool, bool]:
+    """One loop iteration. Returns (ran_a_job, enqueued_periodic_jobs)."""
+    scheduled = False
+    with db.session_scope() as session:
+        if gap > 120:
+            log.warning("wall-clock gap of %.0fs detected (sleep/suspend?) — applying catch-up rules", gap)
+            notify.info(session, "Worker resumed after a pause", f"No processing for ~{gap / 60:.0f} min (sleep, "
+                        "shutdown or suspension). Outdated jobs are expired instead of sent in a burst.")
+            session.commit()
+            expire_outdated(session)
+        if time.time() - last_sched >= 15:
+            schedule(session, clock.now(), s.sync_interval_s)
+            scheduled = True
+        job = jobs.lease(session, worker_id, s.worker_lease_s)
+        heartbeat(session, worker_id, started, "running" if job else "idle", f"{job.kind}#{job.id}" if job else None)
+        if job is None:
+            return False, scheduled
+        log.info("running job %s %s", job.id, job.dedupe_key)
+        run_job(session, job)
+        heartbeat(session, worker_id, started, "idle", None)
+        return True, scheduled
 
 
 if __name__ == "__main__":

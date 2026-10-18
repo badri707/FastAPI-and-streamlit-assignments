@@ -40,7 +40,9 @@ def test_named_scenarios(seeded):
         assert by["syn-mem-scn-new"].id in metrics.segment_members(s, "pending_onboarding", {}, gid)
         sc = metrics.default_scope(s, 90, gid)
         silent = metrics.member_profile(s, by["syn-mem-scn-silent"].id, sc)
-        assert silent["posts"] == 0 and silent["comments"] == 0 and silent["lessons_marked_complete"] == 24
+        assert silent["posts"] == 0 and silent["comments"] == 0 and silent["reactions_given"] == 0
+        assert silent["lessons_marked_complete"] == 24
+        assert by["syn-mem-scn-silent"].id in metrics.segment_members(s, "silent_learners", {"days": 30}, gid)
         commenter = metrics.member_profile(s, by["syn-mem-scn-commenter"].id, sc)
         assert commenter["comments"] >= 40 and commenter["lessons_marked_complete"] <= 1
         assert by["syn-mem-scn-rejoin"].rejoin_count == 1 and by["syn-mem-scn-rejoin"].status == "active"

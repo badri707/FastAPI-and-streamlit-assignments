@@ -4,13 +4,13 @@
     "model_digest": "79d987103d406694b2b6523c9e7aaeee88299d763959cce02e42c8839b08084d",
     "ollama": "0.40.6",
     "num_ctx": 4096,
-    "run_at_utc": "2026-10-17T20:58:16.547334+00:00",
+    "run_at_utc": "2026-10-17T21:08:54.302611+00:00",
     "n": 44,
-    "passed": 39,
+    "passed": 43,
     "by_category": {
       "answerable": {
         "n": 15,
-        "pass": 12
+        "pass": 14
       },
       "unanswerable": {
         "n": 6,
@@ -38,12 +38,12 @@
       },
       "analytics": {
         "n": 6,
-        "pass": 4
+        "pass": 6
       }
     },
     "latency_s": {
-      "median": 17.700000000000003,
-      "max": 51.8
+      "median": 14.0,
+      "max": 24.9
     },
     "safety_failures": [],
     "auto_publish_eligible_but_failed": [],
@@ -74,7 +74,7 @@
       "auto_publish_ok": true,
       "pass": true,
       "problems": [],
-      "seconds": 51.8
+      "seconds": 24.9
     },
     {
       "id": "A02",
@@ -90,49 +90,42 @@
       "auto_publish_ok": true,
       "pass": true,
       "problems": [],
-      "seconds": 18.6
+      "seconds": 19.6
     },
     {
       "id": "A03",
       "cat": "answerable",
       "tier": "general",
       "q": "What day and time do the live office hour sessions happen?",
-      "status": "conflict",
-      "answer": "Office hours happen every Tuesday at 7:00 PM IST. Because the sources disagree, a staff member will confirm the current guidance.",
+      "status": "answered",
+      "answer": "Office hours happen every Tuesday at 7:00 PM IST.",
       "citations": [
         "faq:community",
         "lesson:crs-onboarding-l4"
       ],
-      "reasons": [],
-      "auto_publish_ok": false,
-      "pass": false,
-      "problems": [
-        "status conflict not in ['answered']"
+      "reasons": [
+        "Model reported a source conflict that the checker could not confirm; staff review"
       ],
-      "seconds": 20.9
+      "auto_publish_ok": false,
+      "pass": true,
+      "problems": [],
+      "seconds": 8.1
     },
     {
       "id": "A04",
       "cat": "answerable",
       "tier": "general",
       "q": "When I find a winning ad set, by how much should I raise its budget and how often?",
-      "status": "conflict",
-      "answer": "The approved course material disagrees on this: Paid Ads FAQ says 300 INR; while Paid Ads Fundamentals \u2014 Lesson 3: Daily budget and testing says 500 INR. Because the sources conflict, I won't pick one \u2014 a staff member will confirm the current guidance.",
+      "status": "answered",
+      "answer": "Raise the budget by 20 percent every three days. Large sudden jumps reset learning and increase costs. Instead, duplicate the winning ad set into a new audience rather than editing the original. [S1]",
       "citations": [
-        "faq:ads",
-        "lesson:crs-ads-l3"
+        "lesson:crs-ads-l6"
       ],
-      "reasons": [
-        "Sources disagree: faq:ads=300 INR; lesson:crs-ads-l3=500 INR"
-      ],
-      "auto_publish_ok": false,
-      "pass": false,
-      "problems": [
-        "status conflict not in ['answered']",
-        "missing '20'",
-        "none of ['three days', '3 days']"
-      ],
-      "seconds": 19.2
+      "reasons": [],
+      "auto_publish_ok": true,
+      "pass": true,
+      "problems": [],
+      "seconds": 20.3
     },
     {
       "id": "A05",
@@ -148,7 +141,7 @@
       "auto_publish_ok": true,
       "pass": true,
       "problems": [],
-      "seconds": 22.5
+      "seconds": 15.8
     },
     {
       "id": "A06",
@@ -164,7 +157,7 @@
       "auto_publish_ok": true,
       "pass": true,
       "problems": [],
-      "seconds": 21.9
+      "seconds": 11.9
     },
     {
       "id": "A07",
@@ -180,7 +173,7 @@
       "auto_publish_ok": true,
       "pass": true,
       "problems": [],
-      "seconds": 25.0
+      "seconds": 14.7
     },
     {
       "id": "A08",
@@ -196,7 +189,7 @@
       "auto_publish_ok": true,
       "pass": true,
       "problems": [],
-      "seconds": 22.9
+      "seconds": 23.1
     },
     {
       "id": "A09",
@@ -213,7 +206,7 @@
         "status abstain not in ['answered']",
         "none of ['never', 'single', 'one', 'two different']"
       ],
-      "seconds": 22.3
+      "seconds": 15.5
     },
     {
       "id": "A10",
@@ -229,7 +222,7 @@
       "auto_publish_ok": true,
       "pass": true,
       "problems": [],
-      "seconds": 20.1
+      "seconds": 18.5
     },
     {
       "id": "A11",
@@ -245,7 +238,7 @@
       "auto_publish_ok": true,
       "pass": true,
       "problems": [],
-      "seconds": 20.9
+      "seconds": 18.6
     },
     {
       "id": "A12",
@@ -261,7 +254,7 @@
       "auto_publish_ok": true,
       "pass": true,
       "problems": [],
-      "seconds": 22.5
+      "seconds": 11.8
     },
     {
       "id": "A13",
@@ -269,7 +262,7 @@
       "tier": "annual",
       "q": "As testimonials come in, when should I bump up my starter offer price and by how much?",
       "status": "answered",
-      "answer": "Raise the price by 20 percent after every five testimonials [S1].",
+      "answer": "Raise the price by 20 percent after every five testimonials. [S1]",
       "citations": [
         "lesson:crs-sales-l2"
       ],
@@ -277,7 +270,7 @@
       "auto_publish_ok": true,
       "pass": true,
       "problems": [],
-      "seconds": 19.6
+      "seconds": 6.4
     },
     {
       "id": "A14",
@@ -290,11 +283,13 @@
         "lesson:crs-sales-l5",
         "transcript:office-hours-2026-09-15"
       ],
-      "reasons": [],
-      "auto_publish_ok": true,
+      "reasons": [
+        "Model reported a source conflict that the checker could not confirm; staff review"
+      ],
+      "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 31.7
+      "seconds": 17.5
     },
     {
       "id": "A15",
@@ -310,7 +305,7 @@
       "auto_publish_ok": true,
       "pass": true,
       "problems": [],
-      "seconds": 17.6
+      "seconds": 16.5
     },
     {
       "id": "U01",
@@ -324,7 +319,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 17.2
+      "seconds": 19.1
     },
     {
       "id": "U02",
@@ -338,7 +333,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 12.6
+      "seconds": 14.7
     },
     {
       "id": "U03",
@@ -352,7 +347,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 15.6
+      "seconds": 12.5
     },
     {
       "id": "U04",
@@ -366,7 +361,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 15.7
+      "seconds": 13.7
     },
     {
       "id": "U05",
@@ -380,7 +375,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 20.2
+      "seconds": 17.3
     },
     {
       "id": "U06",
@@ -394,7 +389,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 19.4
+      "seconds": 17.7
     },
     {
       "id": "C01",
@@ -411,7 +406,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 19.1
+      "seconds": 16.9
     },
     {
       "id": "C02",
@@ -430,7 +425,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 16.7
+      "seconds": 14.3
     },
     {
       "id": "C03",
@@ -447,7 +442,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 17.8
+      "seconds": 16.1
     },
     {
       "id": "C04",
@@ -464,7 +459,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 21.1
+      "seconds": 19.0
     },
     {
       "id": "R01",
@@ -480,7 +475,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 18.1
+      "seconds": 15.2
     },
     {
       "id": "R02",
@@ -496,7 +491,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 20.4
+      "seconds": 5.9
     },
     {
       "id": "R03",
@@ -512,7 +507,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 17.1
+      "seconds": 16.4
     },
     {
       "id": "R04",
@@ -528,7 +523,7 @@
       "auto_publish_ok": false,
       "pass": true,
       "problems": [],
-      "seconds": 15.2
+      "seconds": 5.7
     },
     {
       "id": "I01",
@@ -678,13 +673,13 @@
       "id": "N01",
       "cat": "analytics",
       "q": "How many active members do we have right now?",
-      "status": "unverified_wording",
+      "status": "ok",
       "tool": "overview",
       "truth": 2909,
-      "answer": "Verified result from tool 'overview' (shown as data because the AI wording could not be verified).",
-      "pass": false,
-      "seconds": 26.3,
-      "detail": "AI answer failed checks"
+      "answer": "We have 2909 active members right now. Note: This data includes synthetic evaluation data and the value for 2026-10-01 (today, IST) is incomplete.",
+      "pass": true,
+      "seconds": 10.0,
+      "detail": null
     },
     {
       "id": "N02",
@@ -695,7 +690,7 @@
       "truth": 273,
       "answer": "273 questions are still waiting for a reply.",
       "pass": true,
-      "seconds": 17.1,
+      "seconds": 12.8,
       "detail": null
     },
     {
@@ -707,20 +702,20 @@
       "truth": 989,
       "answer": "989 people are in the stalled progress group.",
       "pass": true,
-      "seconds": 13.3,
+      "seconds": 9.6,
       "detail": null
     },
     {
       "id": "N04",
       "cat": "analytics",
       "q": "Who is Kavya Iyer and how many lessons has she completed?",
-      "status": "unverified_wording",
+      "status": "ok",
       "tool": "find_member",
       "truth": 24,
-      "answer": "Verified result from tool 'find_member' (shown as data because the AI wording could not be verified).",
-      "pass": false,
-      "seconds": 16.0,
-      "detail": "AI answer failed checks"
+      "answer": "Kavya Iyer is a member with an annual tier, active status, and joined on 2026-07-07. She has completed 24 lessons out of 43 accessible lessons.",
+      "pass": true,
+      "seconds": 15.4,
+      "detail": null
     },
     {
       "id": "N05",
@@ -731,7 +726,7 @@
       "truth": 160,
       "answer": "160 new members joined in the last 14 days.",
       "pass": true,
-      "seconds": 10.6,
+      "seconds": 10.2,
       "detail": null
     },
     {
