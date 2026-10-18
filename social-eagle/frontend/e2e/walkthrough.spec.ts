@@ -80,6 +80,17 @@ test('support inbox and thread', async ({ page }) => {
 
 test('lab question → real AI auto-reply → published in local thread', async ({ page }) => {
   await signIn(page)
+  // Auto-replies respect quiet hours (23:00–07:00 IST). Move the test clock into daytime first if needed.
+  const status = await page.request.get('/api/system/status').then(r => r.json())
+  const hhmm = /(\d{2}):(\d{2}) IST/.exec(status.clock.local)
+  if (hhmm) {
+    const mins = Number(hhmm[1]) * 60 + Number(hhmm[2])
+    if (mins < 7 * 60 + 5 || mins >= 22 * 60) {
+      const advance = ((10 * 60 - mins) + 24 * 60) % (24 * 60)
+      const csrf = await page.request.get('/api/auth/status').then(r => r.json()).then(j => j.csrf)
+      await page.request.post('/api/system/clock/advance', { data: { advance_minutes: advance }, headers: { 'X-CSRF-Token': csrf } })
+    }
+  }
   await nav(page, 'Evaluation lab').click()
   const title = `Captions on reels? (e2e ${Date.now()})`
   await page.getByLabel('Title').fill(title)

@@ -79,12 +79,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3164,
+                  "duration": 5482,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-17T21:38:25.782Z",
+                  "startTime": "2026-10-18T17:01:44.799Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -113,12 +113,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1259,
+                  "duration": 1531,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-17T21:38:29.710Z",
+                  "startTime": "2026-10-18T17:01:51.382Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -133,7 +133,7 @@
         },
         {
           "title": "lab question → real AI auto-reply → published in local thread",
-          "ok": false,
+          "ok": true,
           "tags": [],
           "tests": [
             {
@@ -146,53 +146,18 @@
                 {
                   "workerIndex": 0,
                   "parallelIndex": 0,
-                  "status": "failed",
-                  "duration": 20739,
-                  "error": {
-                    "message": "Error: \u001b[31mTimed out 20000ms waiting for \u001b[39m\u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m\n\nLocator: getByText(/Question posted in the simulator/)\nExpected: visible\nReceived: <element(s) not found>\nCall log:\n\u001b[2m  - expect.toBeVisible with timeout 20000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/Question posted in the simulator/)\u001b[22m\n",
-                    "stack": "Error: \u001b[31mTimed out 20000ms waiting for \u001b[39m\u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m\n\nLocator: getByText(/Question posted in the simulator/)\nExpected: visible\nReceived: <element(s) not found>\nCall log:\n\u001b[2m  - expect.toBeVisible with timeout 20000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/Question posted in the simulator/)\u001b[22m\n\n    at /home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/e2e/walkthrough.spec.ts:88:68",
-                    "location": {
-                      "file": "/home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/e2e/walkthrough.spec.ts",
-                      "column": 68,
-                      "line": 88
-                    },
-                    "snippet": "  86 |   await page.getByLabel('Body').fill('Do I really need captions on my short videos? Editing them takes a long time.')\n  87 |   await page.getByRole('button', { name: 'Post question' }).click()\n> 88 |   await expect(page.getByText(/Question posted in the simulator/)).toBeVisible()\n     |                                                                    ^\n  89 |   await nav(page, 'Discussions').click()\n  90 |   await page.getByLabel('Full-text search').fill('e2e')\n  91 |   await page.getByRole('button', { name: 'Search' }).click()"
-                  },
-                  "errors": [
-                    {
-                      "location": {
-                        "file": "/home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/e2e/walkthrough.spec.ts",
-                        "column": 68,
-                        "line": 88
-                      },
-                      "message": "Error: \u001b[31mTimed out 20000ms waiting for \u001b[39m\u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m\n\nLocator: getByText(/Question posted in the simulator/)\nExpected: visible\nReceived: <element(s) not found>\nCall log:\n\u001b[2m  - expect.toBeVisible with timeout 20000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/Question posted in the simulator/)\u001b[22m\n\n\n  86 |   await page.getByLabel('Body').fill('Do I really need captions on my short videos? Editing them takes a long time.')\n  87 |   await page.getByRole('button', { name: 'Post question' }).click()\n> 88 |   await expect(page.getByText(/Question posted in the simulator/)).toBeVisible()\n     |                                                                    ^\n  89 |   await nav(page, 'Discussions').click()\n  90 |   await page.getByLabel('Full-text search').fill('e2e')\n  91 |   await page.getByRole('button', { name: 'Search' }).click()\n    at /home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/e2e/walkthrough.spec.ts:88:68"
-                    }
-                  ],
+                  "status": "passed",
+                  "duration": 17159,
+                  "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-17T21:38:30.974Z",
+                  "startTime": "2026-10-18T17:01:52.936Z",
                   "annotations": [],
-                  "attachments": [
-                    {
-                      "name": "screenshot",
-                      "contentType": "image/png",
-                      "path": "/home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/test-results/walkthrough-lab-question-→-6de3b-→-published-in-local-thread/test-failed-1.png"
-                    },
-                    {
-                      "name": "_error-context-0",
-                      "contentType": "text/markdown",
-                      "path": "/home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/test-results/walkthrough-lab-question-→-6de3b-→-published-in-local-thread/error-context.md"
-                    }
-                  ],
-                  "errorLocation": {
-                    "file": "/home/user/FastAPI-and-streamlit-assignments/social-eagle/frontend/e2e/walkthrough.spec.ts",
-                    "column": 68,
-                    "line": 88
-                  }
+                  "attachments": []
                 }
               ],
-              "status": "unexpected"
+              "status": "expected"
             }
           ],
           "id": "500ef8780b21ce3c46c7-4f88bf397ec4839b9c2b",
@@ -213,25 +178,25 @@
               "projectName": "",
               "results": [
                 {
-                  "workerIndex": -1,
-                  "parallelIndex": -1,
-                  "status": "skipped",
-                  "duration": 0,
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1600,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-17T21:38:51.816Z",
+                  "startTime": "2026-10-18T17:02:10.106Z",
                   "annotations": [],
                   "attachments": []
                 }
               ],
-              "status": "skipped"
+              "status": "expected"
             }
           ],
           "id": "500ef8780b21ce3c46c7-e17127bcffc7163d22e8",
           "file": "walkthrough.spec.ts",
-          "line": 103,
+          "line": 114,
           "column": 1
         },
         {
@@ -247,25 +212,25 @@
               "projectName": "",
               "results": [
                 {
-                  "workerIndex": -1,
-                  "parallelIndex": -1,
-                  "status": "skipped",
-                  "duration": 0,
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 28713,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-17T21:38:51.817Z",
+                  "startTime": "2026-10-18T17:02:11.717Z",
                   "annotations": [],
                   "attachments": []
                 }
               ],
-              "status": "skipped"
+              "status": "expected"
             }
           ],
           "id": "500ef8780b21ce3c46c7-154add5ef9411ea11689",
           "file": "walkthrough.spec.ts",
-          "line": 124,
+          "line": 135,
           "column": 1
         },
         {
@@ -281,25 +246,25 @@
               "projectName": "",
               "results": [
                 {
-                  "workerIndex": -1,
-                  "parallelIndex": -1,
-                  "status": "skipped",
-                  "duration": 0,
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12780,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-17T21:38:51.817Z",
+                  "startTime": "2026-10-18T17:02:40.437Z",
                   "annotations": [],
                   "attachments": []
                 }
               ],
-              "status": "skipped"
+              "status": "expected"
             }
           ],
           "id": "500ef8780b21ce3c46c7-2303e2b3c2e190389808",
           "file": "walkthrough.spec.ts",
-          "line": 132,
+          "line": 143,
           "column": 1
         }
       ]
@@ -307,11 +272,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-17T21:38:24.843Z",
-    "duration": 26998.24,
-    "expected": 2,
-    "skipped": 3,
-    "unexpected": 1,
+    "startTime": "2026-10-18T17:01:43.118Z",
+    "duration": 70254.59,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
     "flaky": 0
   }
 }

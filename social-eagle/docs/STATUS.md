@@ -1,24 +1,26 @@
-# Status — checkpoint (work in progress)
+# Status
 
-**Phase:** independent evaluation build. Live Skool connection: deferred until approval.
+**Independent application verified; live Skool connection deferred until approval.** (2026-10-18)
 
-## Done (not yet covered by automated tests)
-- Backend core: config (RUN_MODE=evaluation default), SQLite/WAL, Alembic migrations 0001–0002 (incl. FTS5), controllable clock.
-- Connector contract, stateful local simulator (separate DB, change feed, fault injection), disabled Skool boundary, mode-enforcing factory.
-- Reproducible seed (fixed seed 20260930): 250 members + 12 isolation-group members, 8 courses / 43 lessons, 90 days,
-  ~3,460 posts/comments/reactions, scenarios, duplicate/late/out-of-order feed deliveries.
-- Synthetic knowledge base (49 docs incl. deliberate contradictions, text PDF, scanned PDF → needs_ocr).
-- Incremental idempotent sync (deferred orphans resolve; 0 remaining after full sync).
-- Deterministic metrics, support inbox rules, AI answer pipeline (local Ollama + Qwen3-4B-Instruct-2507 Q4_K_M),
-  owner chat tools, durable jobs/worker, actions (draft→approve→send→verify, reconciliation), automation rules,
-  backup/restore, retention, reports/CSV (formula-injection safe), import with preview, auth/security, most API routers.
+## Done
+- **Build plan:** all six milestones from the spec are complete; see `docs/ACCEPTANCE_MATRIX.md`.
+- **Synthetic community:** scaled to **3,200 members** at the owner's request.
+- **Results:** checks, tests, the browser walkthrough, the required demo, the AI evaluation and performance measurements are in
+  `docs/VERIFICATION_REPORT.md`.
+- **Evidence:** in `docs/evidence/` (JSON results and screenshots, synthetic data only).
 
-## Known incomplete
-- `app/main.py` imports routers not yet written: learning_api, reports_api, data_api, lab_api → app does not start yet.
-- Frontend, scripts (setup/start/stop/doctor/check/backup/restore), docs, tests, AI eval, measurements: not started.
-
-## Open question to owner
-- Message interrupted: "More than 3000 members of the…" — likely request to scale the synthetic community to 3,000+. Awaiting confirmation.
+## Not done / open
+- **On the Mac:** re-measure performance and AI on the MacBook Air M2 (container numbers are not Mac numbers), and verify the
+  scripts there (only Linux was exercised).
+- **Tamil/Tanglish:** not evaluated.
+- **Membership/billing reporting:** not implemented (no source data).
+- **Live Skool adapter:** deferred until the owner approves and explicitly authorizes connection (`docs/SKOOL_ADAPTER_PLAN.md`).
 
 ## Next executable step
-Write the four missing routers, then `cd backend && uv run python -m app.evaluation --yes` and start the API.
+Owner review: on the Mac, run `scripts/setup && scripts/start` and follow `docs/APPROVAL_WALKTHROUGH.md`.
+Then optionally run `scripts/ai-eval` and `cd backend && .venv/bin/python -m tests.perf.measure --password <yours>` to get Mac numbers.
+
+## Resume notes for development
+- Read `CLAUDE.md` first.
+- Schema changes need migration 0004+.
+- Keep `RUN_MODE=evaluation` until the owner authorizes the live phase.
