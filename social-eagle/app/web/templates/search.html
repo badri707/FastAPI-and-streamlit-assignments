@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% block body %}
+<h1>Search</h1><form method="get"><input name="q" value="{{ q }}" size="40" aria-label="Query"> <label>As member id (permission scope) <input name="member" value="{{ member or '' }}" size="6"></label> <button>Search</button></form>
+<p class="note">Deterministic keyword search. Lessons are filtered to the courses the given member is entitled to; leave blank for admin scope. No AI is used here.</p>
+{% if q %}<h2>Lessons ({{ results|length }})</h2><ul>{% for r in results %}<li><a href="{{ r.link }}">{{ r.lesson_title }}</a> — {{ r.course }}<br><span class="note">{{ r.snippet }}</span></li>{% else %}<li>No permitted lesson matches.</li>{% endfor %}</ul>
+<h2>Posts ({{ posts|length }})</h2><ul>{% for p in posts %}<li>{{ p.title }} <span class="note">{{ p.source_ref }}{% if p.is_excerpt %} · excerpt{% endif %}</span></li>{% endfor %}</ul>{% endif %}
+{% endblock %}

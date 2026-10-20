@@ -1,0 +1,108 @@
+{% macro unavailable(sec) %}<div class="card unavailable"><b>{{ sec.availability|upper }}</b> — {{ sec.reason }}</div>{% endmacro %}
+{% macro who(mm) %}{% if mm %}{{ mm.name }} <span class="note">({{ mm.source_member_id }})</span>{% else %}—{% endif %}{% endmacro %}
+
+
+{% macro sec_membership(S) %}
+<h2>Member coverage</h2>
+{% if S.membership.availability in ("ok","partial") %}{% set M = S.membership %}
+<div class="grid"><div class="card kpi"><b>{{ M.learners_known }}</b>learners known</div><div class="card kpi"><b>{{ M.staff_known }}</b>staff</div><div class="card kpi"><b>{{ M.bots_known }}</b>bots</div></div>
+<table><tr><th>Breakdown</th><th>Values</th></tr>
+<tr><td>Batch status</td><td>{% for k,v in M.by_batch_status.items() %}{{ k }}: {{ v }}{% if not loop.last %} · {% endif %}{% endfor %}</td></tr>
+<tr><td>Plan label (business label)</td><td>{% for k,v in M.by_plan_label.items() %}{{ k }}: {{ v }}{% if not loop.last %} · {% endif %}{% endfor %}</td></tr>
+<tr><td>Current cohort</td><td>{% for k,v in M.by_current_cohort.items() %}{{ k }}: {{ v }}{% if not loop.last %} · {% endif %}{% endfor %}</td></tr>
+<tr><td>Active course enrolment</td><td>{% for k,v in M.by_active_course_enrolment.items() %}{{ k }}: {{ v }}{% if not loop.last %} · {% endif %}{% endfor %}</td></tr></table>
+<p class="note">{{ M.note }}</p>{% else %}{{ unavailable(S.membership) }}{% endif %}
+
+{% endmacro %}
+
+{% macro sec_participation(S) %}
+<h2>Participation</h2>
+{% if S.participation.availability in ("ok","partial") %}{% set P = S.participation.interval %}
+<div class="grid">{% for k,v in P.totals_learners.items() %}<div class="card kpi"><b>{{ v }}</b>{{ k.replace("_"," ") }}</div>{% endfor %}
+<div class="card kpi"><b>{{ S.participation.active_days_7.members_with_observed_activity }}</b>members active (7d)</div>
+<div class="card kpi"><b>{{ S.participation.active_days_30.members_with_observed_activity }}</b>members active (30d)</div></div>
+<p>Staff/bot activity (excluded from learner totals): posts {{ P.staff_and_bot_activity.posts }}, comments {{ P.staff_and_bot_activity.comments }}, likes given {{ P.staff_and_bot_activity.likes_given }}.
+Excluded: {{ P.excluded_confirmed_deleted }} confirmed-deleted items, {{ P.excluded_removed_likes }} removed likes.</p>
+{% if P.by_category_posts %}<p>Posts by category: {% for k,v in P.by_category_posts.items() %}{{ k }}: {{ v }}{% if not loop.last %} · {% endif %}{% endfor %}</p>{% endif %}
+<div class="table-wrap"><table><tr><th>Member</th><th>Posts</th><th>Comments</th><th>Likes given</th><th>Likes received</th><th>Active days 7d</th><th>30d</th></tr>
+{% for mid, r in P.per_member.items() %}<tr><td>{{ who(r.member) }}</td><td>{{ r.posts }}</td><td>{{ r.comments }}</td><td>{{ r.likes_given }}</td><td>{{ r.likes_received }}</td>
+<td>{{ S.participation.active_days_7.per_member_active_days.get(mid, 0) }}</td><td>{{ S.participation.active_days_30.per_member_active_days.get(mid, 0) }}</td></tr>{% endfor %}</table></div>
+<p class="note">{{ P.note }} {{ S.participation.active_days_7.note }}</p>{% else %}{{ unavailable(S.participation) }}{% endif %}
+
+{% endmacro %}
+
+{% macro sec_learning(S) %}
+<h2>Learning progress (recorded)</h2>
+{% if S.learning.availability in ("ok","partial") %}{% set L = S.learning %}
+<p>{{ L.enrolments_counted }} active entitled/enrolled course records · progress recorded {{ L.progress_recorded }} · <b>unknown {{ L.progress_unknown }}</b> · members with a comparable increase: {{ L.members_with_comparable_progress_increase }}</p>
+<div class="table-wrap"><table><tr><th>Member</th><th>Course</th><th>Completed / total</th><th>Observed</th><th>Change in interval</th></tr>
+{% for r in L.enrolments %}<tr><td>{{ who(r.member) }}</td><td>{{ r.course_title }}{% if r.status %} <span class="badge bad">{{ r.status }}</span>{% endif %}</td>
+<td>{% if r.progress == "unknown" %}<span class="badge partial">unknown</span>{% else %}{{ r.completed }} / {{ r.total }}{% endif %}</td><td>{{ r.observed_at or "—" }}</td>
+<td>{% if r.change_status == "comparable" %}{{ "%+d"|format(r.change) }}{% else %}<span class="note">{{ r.change_status }}</span>{% endif %}</td></tr>{% endfor %}</table></div>
+<h3>Assigned-lesson deadline checks</h3>
+<div class="table-wrap"><table><tr><th>Member</th><th>Cohort</th><th>Lesson</th><th>Due</th><th>Status</th></tr>
+{% for d in L.deadline_checks %}<tr><td>{{ who(d.member) }}</td><td>{{ d.cohort }}</td><td>{{ d.lesson_title }}</td><td>{{ d.due_at }}</td>
+<td><span class="badge {{ 'bad' if d.status=='overdue' else ('ok' if d.status=='completed_marker_recorded' else 'partial') }}">{{ d.status }}</span></td></tr>{% endfor %}</table></div>
+<p class="note">{{ L.note }} Optional, unreleased and not-entitled lessons are never marked overdue; new joins have a grace period.</p>
+{% else %}{{ unavailable(S.learning) }}{% endif %}
+
+{% endmacro %}
+
+{% macro sec_assignments(S) %}
+<h2>Assignments</h2>
+{% if S.assignments.availability in ("ok","partial") %}{% set A = S.assignments %}
+<div class="grid"><div class="card kpi"><b>{{ A.submitted_in_interval|length }}</b>submitted</div><div class="card kpi"><b>{{ A.feedback_delivered_in_interval|length }}</b>feedback delivered</div>
+<div class="card kpi"><b>{{ A.awaiting_review|length }}</b>awaiting review</div><div class="card kpi"><b>{{ A.reviewed_feedback_not_delivered|length }}</b>reviewed, feedback not recorded</div></div>
+<div class="table-wrap"><table><tr><th>Assignment</th><th>Member</th><th>Submitted</th><th>Due</th><th>State</th><th>Source</th></tr>
+{% for a in A.submitted_in_interval %}<tr><td>{{ a.assignment_title }}</td><td>{{ who(a.member) }}</td><td>{{ a.submitted_at }}</td><td>{{ a.due_at or "not supplied" }}</td><td>submitted in interval</td><td>{{ a.source_ref }}</td></tr>{% endfor %}
+{% for a in A.feedback_delivered_in_interval %}<tr><td>{{ a.assignment_title }}</td><td>{{ who(a.member) }}</td><td>{{ a.submitted_at }}</td><td>{{ a.due_at or "not supplied" }}</td><td>feedback delivered {{ a.feedback_delivered_at }} by {{ who(a.reviewer) }} ({{ a.channel }}){% if a.assessment_result %}; result {{ a.assessment_result }}{% endif %}</td><td>{{ a.source_ref }}</td></tr>{% endfor %}
+{% for a in A.awaiting_review %}<tr><td>{{ a.assignment_title }}</td><td>{{ who(a.member) }}</td><td>{{ a.submitted_at }}</td><td>{{ a.due_at or "not supplied" }}</td><td><span class="badge bad">awaiting review {{ a.age_hours }} h</span></td><td>{{ a.source_ref }}</td></tr>{% endfor %}
+{% for a in A.ambiguous_classification_needs_review %}<tr><td>?</td><td>{{ who(a.member) }}</td><td>{{ a.submitted_at }}</td><td>—</td><td><span class="badge partial">needs classification</span></td><td>{{ a.source_ref }}</td></tr>{% endfor %}
+</table></div><p class="note">{{ A.note }}</p>{% else %}{{ unavailable(S.assignments) }}{% endif %}
+
+{% endmacro %}
+
+{% macro sec_wins(S) %}
+<h2>Wins</h2>
+{% if S.wins.availability in ("ok","partial") %}{% if S.wins.wins %}<table><tr><th>Member</th><th>Win</th><th>Category</th><th>Verification</th><th>Source</th></tr>
+{% for w in S.wins.wins %}<tr><td>{{ who(w.member) }}</td><td>{{ w.title }}</td><td>{{ w.category or "—" }}</td><td>{{ w.verification }}</td><td>{{ w.source_ref }}</td></tr>{% endfor %}</table>
+{% else %}<p>No wins observed in this interval's captured data.</p>{% endif %}<p class="note">{{ S.wins.note }}</p>{% else %}{{ unavailable(S.wins) }}{% endif %}
+
+{% endmacro %}
+
+{% macro sec_support(S) %}
+<h2>Support</h2>
+{% if S.support.availability in ("ok","partial") %}{% set Q = S.support %}
+<p>Target: first staff response within {{ Q.target.first_staff_response_hours }} {{ Q.target.basis }} hours. <span class="note">{{ Q.target.note }}</span></p>
+<div class="grid"><div class="card kpi"><b>{{ Q.new_count }}</b>new questions</div><div class="card kpi"><b>{{ Q.new_with_staff_response }}</b>new with staff response</div>
+<div class="card kpi"><b>{{ Q.median_first_staff_response_hours_new if Q.median_first_staff_response_hours_new is not none else "—" }}</b>median first staff response (h, new)</div>
+<div class="card kpi"><b>{{ Q.unresolved|length }}</b>unresolved</div><div class="card kpi"><b>{{ Q.unresolved_awaiting_staff }}</b>awaiting staff</div><div class="card kpi"><b>{{ Q.unresolved_awaiting_member }}</b>awaiting member</div>
+<div class="card kpi"><b>{{ Q.target_breaches_open|length }}</b>open target breaches</div></div>
+<div class="table-wrap"><table><tr><th>Asked by</th><th>Asked</th><th>Question</th><th>First staff response</th><th>Peer / bot</th><th>State (evidence)</th><th>Owner</th></tr>
+{% for q in Q.unresolved %}<tr><td>{{ who(q.member) }}</td><td>{{ q.asked_at }}<br><span class="note">{{ q.age_hours }} h</span></td><td>{{ q.text }}<br><span class="note">{{ q.source_ref }}</span></td>
+<td>{{ q.first_staff_response_at or "none" }}{% if q.first_response_target_breached %} <span class="badge bad">target breached</span>{% endif %}</td>
+<td>{{ q.peer_responses }} / {{ q.bot_responses }}</td><td>{{ q.state_from_evidence }}{% if q.reopened_count %} (reopened {{ q.reopened_count }}×){% endif %}</td><td>{{ who(q.assigned_owner) }}</td></tr>{% endfor %}</table></div>
+<p class="note">{{ Q.note }}</p>{% else %}{{ unavailable(S.support) }}{% endif %}
+
+{% endmacro %}
+
+{% macro sec_outreach(S) %}
+<h2>Members who may benefit from outreach</h2>
+{% if S.outreach.availability == "ok" %}{% set O = S.outreach %}
+{% if O.outreach_candidates %}<table><tr><th>Member</th><th>Transparent reasons</th></tr>{% for c in O.outreach_candidates %}<tr><td>{{ who(c.member) }}</td><td><ul>{% for r in c.reasons %}<li>{{ r }}</li>{% endfor %}</ul></td></tr>{% endfor %}</table>{% else %}<p>No members matched the configured outreach rules.</p>{% endif %}
+{% if O.quiet_rule_note %}<p class="note">{{ O.quiet_rule_note }}</p>{% endif %}
+<h2>Staff follow-up list</h2>
+<table><tr><th>Owner</th><th>Reason</th><th>Member</th><th>Source</th></tr>{% for f in O.staff_follow_ups %}<tr><td>{{ who(f.owner) if f.owner else "unassigned" }}</td><td>{{ f.reason }}</td><td>{{ who(f.member) }}</td><td>{{ f.source_ref }}</td></tr>{% endfor %}</table>
+<p class="note">{{ O.note }}</p>{% else %}{{ unavailable(S.outreach) }}{% endif %}
+
+{% endmacro %}
+
+{% macro sec_leaderboard(S) %}
+<h2>Leaderboard observations</h2>
+{% if S.leaderboard.availability in ("ok","partial","snapshot_based") %}{% for period, lb in S.leaderboard.periods.items() %}
+<h3>{{ period }} — observed {{ lb.observed_at }} {% if not lb.is_complete %}<span class="badge partial">partial snapshot</span>{% endif %}</h3>
+<table><tr><th>Rank</th><th>Member</th><th>Points</th></tr>{% for e in lb.entries %}<tr><td>{{ e.rank }}</td><td>{{ who(e.member) }}</td><td>{{ e.points }}</td></tr>{% endfor %}</table>
+<p class="note">Changes vs {{ lb.previous_observed_at or "—" }}: {{ lb.comparability }}{% if lb.changes %} — {% for c in lb.changes %}{{ c.member.name }} {{ "%+d"|format(c.points_change) }} pts{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}</p>
+{% else %}<p>No leaderboard snapshots captured.</p>{% endfor %}<p class="note">{{ S.leaderboard.note }}</p>{% else %}{{ unavailable(S.leaderboard) }}{% endif %}
+
+{% endmacro %}

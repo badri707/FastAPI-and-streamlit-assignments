@@ -1,0 +1,2 @@
+# Live public read attempt 2026-10-20T16:42:10Z from the cloud build sandbox
+https://www.skool.com/ai-automation-society: failed new=0 changed=0 error=ProxyError: 403 Forbidden

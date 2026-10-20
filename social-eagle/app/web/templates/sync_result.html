@@ -1,0 +1,2 @@
+{% extends "base.html" %}{% block body %}<h1>Public read result</h1><table><tr><th>Source</th><th>Status</th><th>New records</th><th>Error</th></tr>
+{% for r in results %}<tr><td>{{ r.source }}</td><td>{{ r.status }}</td><td>{{ r.new }}</td><td>{{ r.error or "" }}</td></tr>{% endfor %}</table><p><a href="/health">Data health</a></p>{% endblock %}

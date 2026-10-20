@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% block body %}
+<h1>Overview{% if c %} — {{ c.name }}{% endif %}</h1>
+{% include "_datepick.html" %}
+{% if not c %}<div class="card">No community data in this workspace yet.
+{% if mode == "public" %}<form method="post" action="/public/sync"><button>Run public read now</button></form>{% else %}Run <code>scripts/seed-evaluation.sh</code> to load the synthetic scenarios.{% endif %}</div>
+{% else %}
+{% if c.displayed_member_total %}<p>Displayed member total: <b>{{ c.displayed_member_total }}</b>, online: <b>{{ c.displayed_online or "—" }}</b> <span class="note">(approximate public snapshot as displayed, observed {{ fmt_local(c.totals_observed_at) }})</span></p>{% endif %}
+<div class="card">Report status for {{ date }}: <span class="badge {{ p.status }}">{{ p.status }}</span> · worker heartbeat: {{ heartbeat or "never — start the worker" }}
+· <a href="/reports/preview?first={{ date }}&community={{ c.id }}">Preview report</a></div>
+{% set S = p.sections %}
+<div class="grid">
+{% if S.participation.availability in ("ok","partial") %}{% set T = S.participation.interval.totals_learners %}
+<div class="card kpi"><b>{{ T.distinct_contributors }}</b>contributors</div><div class="card kpi"><b>{{ T.posts }}</b>posts</div><div class="card kpi"><b>{{ T.comments }}</b>comments</div>
+{% else %}<div class="card kpi unavailable"><b>—</b>participation unavailable</div>{% endif %}
+{% if S.support.availability in ("ok","partial") %}<div class="card kpi"><b>{{ S.support.unresolved|length }}</b>unresolved questions</div><div class="card kpi"><b>{{ S.support.target_breaches_open|length }}</b>open response breaches</div>{% endif %}
+{% if S.assignments.availability in ("ok","partial") %}<div class="card kpi"><b>{{ S.assignments.awaiting_review|length }}</b>assignments awaiting review</div>{% endif %}
+{% if S.learning.availability in ("ok","partial") %}<div class="card kpi"><b>{{ S.learning.progress_unknown }}</b>enrolments with unknown progress</div>{% endif %}
+</div>
+{% if S.outreach.availability == "ok" %}<h2>Staff follow-ups ({{ S.outreach.staff_follow_ups|length }})</h2>
+<table><tr><th>Owner</th><th>Reason</th><th>Member</th></tr>{% for f in S.outreach.staff_follow_ups[:10] %}<tr><td>{{ f.owner.name if f.owner else "unassigned" }}</td><td>{{ f.reason }}</td><td>{% if f.member %}<a href="/members/{{ f.member.member_id }}">{{ f.member.name }}</a>{% endif %}</td></tr>{% endfor %}</table>{% endif %}
+{% endif %}
+<h2>Recent sync runs</h2><table><tr><th>#</th><th>Source</th><th>Method</th><th>Status</th><th>Coverage</th><th>New / changed</th><th>Error</th></tr>
+{% for r in runs %}<tr><td>{{ r.id }}</td><td>{{ r.source_name }}</td><td>{{ r.method }}</td><td><span class="badge {{ 'ok' if r.status=='success' else ('partial' if r.status=='partial' else 'bad') }}">{{ r.status }}</span></td><td>{{ r.coverage_status }}</td><td>{{ r.records_new }} / {{ r.records_changed }}</td><td>{{ r.error or "" }}</td></tr>{% endfor %}</table>
+<h2>Recent reports & notifications</h2><table><tr><th>Report</th><th>Status</th><th>Trigger</th></tr>{% for r in recent %}<tr><td><a href="/reports/{{ r.id }}">{{ r.report_date }} r{{ r.revision }}</a></td><td>{{ r.status }}</td><td>{{ r.trigger }}</td></tr>{% endfor %}</table>
+<table><tr><th>Notification</th><th>Channel</th><th>Delivery state</th></tr>{% for o in outbox %}<tr><td>{{ o.subject }}</td><td>{{ o.channel }}</td><td>{{ o.state }}</td></tr>{% endfor %}</table>
+<p class="note">A generated report is not a delivered notification; delivery state is tracked separately. Only in-app delivery is enabled.</p>
+{% endblock %}

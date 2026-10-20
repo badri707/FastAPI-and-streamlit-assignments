@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% block body %}
+<h1>Members{% if c %} — {{ c.name }}{% endif %}</h1>
+{% if mode == "public" %}<p class="note">Public mode shows only contributors observed in captured public pages. This is NOT a full member directory.</p>{% endif %}
+<form method="get" class="noprint"><input name="q" value="{{ q }}" placeholder="Search name or member ID" aria-label="Search">
+<select name="role" aria-label="Role"><option value="">any role</option>{% for r in ["member","staff","bot","admin"] %}<option {% if role==r %}selected{% endif %}>{{ r }}</option>{% endfor %}</select>
+<button>Filter</button></form>
+<p>{{ total }} matching · showing {{ offset + 1 if total else 0 }}–{{ [offset + page_size, total]|min }}</p>
+<div class="table-wrap"><table><tr><th>Name</th><th>Member ID</th><th>Role</th><th>Joined</th><th>Recorded progress (selected day)</th></tr>
+{% for r in rows %}<tr><td><a href="/members/{{ r.id }}">{{ r.display_name }}</a></td><td>{{ r.source_member_id }}</td><td>{{ r.role }}</td><td>{{ fmt_local(r.joined_at) }}</td>
+<td>{% for e in learning.get(r.id, []) %}{{ e.course }}: {% if e.progress == "unknown" %}<span class="badge partial">unknown</span>{% else %}{{ e.completed }}/{{ e.total }}{% endif %}{% if not loop.last %}; {% endif %}{% endfor %}</td></tr>{% endfor %}</table></div>
+{% if offset > 0 %}<a href="?q={{ q }}&role={{ role }}&offset={{ [offset - page_size, 0]|max }}">← previous</a>{% endif %}
+{% if offset + page_size < total %}<a href="?q={{ q }}&role={{ role }}&offset={{ offset + page_size }}">next →</a>{% endif %}
+{% endblock %}

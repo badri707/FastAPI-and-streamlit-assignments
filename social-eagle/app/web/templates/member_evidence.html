@@ -1,0 +1,24 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Evidence report — {{ p.member.name }}</title>{% include "_style.html" %}</head><body><main>
+<h1>Member evidence report — {{ p.member.name }}</h1>
+{% if p.community.synthetic %}<div class="banner"><b>SYNTHETIC TEST DATA.</b> Fictional member for workflow verification.</div>{% endif %}
+<div class="card">Community: {{ p.community.name }} · Member ID {{ p.member.source_member_id }} · Joined {{ p.member.joined_at or "unknown" }}
+{% if p.member.previous_names %} · Previous names: {{ p.member.previous_names|join(", ") }}{% endif %}<br>
+Generated {{ p.generated_at_utc }} · {{ p.calc_version }}</div>
+<h2>Batches, plan labels and course access</h2>
+<table><tr><th>Type</th><th>Value</th><th>From</th><th>To</th></tr>
+{% for b in p.batches %}<tr><td>Batch</td><td>{{ b.cohort }}</td><td>{{ b.from }}</td><td>{{ b.to or "current" }}</td></tr>{% endfor %}
+{% for b in p.plan_labels %}<tr><td>Plan label</td><td>{{ b.label }} ({{ b.status }})</td><td>{{ b.from }}</td><td>{{ b.to or "current" }}</td></tr>{% endfor %}
+{% for b in p.course_access %}<tr><td>Course access</td><td>{{ b.course }}</td><td>{{ b.from }}</td><td>{{ b.to or "current" }}</td></tr>{% endfor %}</table>
+<p>Likes given: {{ p.likes.given_total }} (removed: {{ p.likes.removed_given }}) · Likes received: {{ p.likes.received_total }}</p>
+<h2>Dated timeline (member actions and company responses)</h2>
+<table><tr><th>When (IST)</th><th>Side</th><th>Event</th><th>Source</th></tr>
+{% for t in p.timeline %}<tr><td>{{ t.at_local }}</td><td>{{ t.side }}</td><td>{{ t.summary }}</td><td class="note">{{ t.source_ref or "" }}</td></tr>{% endfor %}</table>
+<h2>Coverage limitations</h2>
+{% if p.coverage_limitations %}<table><tr><th>Source</th><th>Status</th><th>Coverage</th><th>Window</th><th>Error</th></tr>
+{% for r in p.coverage_limitations %}<tr><td>{{ r.source }}</td><td>{{ r.status }}</td><td>{{ r.coverage }}</td><td>{{ r.from }} → {{ r.to }}</td><td>{{ r.error or "" }}</td></tr>{% endfor %}</table>
+{% else %}<p>No failed or partial syncs recorded.</p>{% endif %}
+{% if p.corrections %}<h2>Corrections (audit trail)</h2><table><tr><th>Field</th><th>Old</th><th>New</th><th>Reason</th><th>By</th><th>At</th></tr>
+{% for c in p.corrections %}<tr><td>{{ c.field }}</td><td>{{ c.old }}</td><td>{{ c.new }}</td><td>{{ c.reason }}</td><td>{{ c.by }}</td><td>{{ c.at }}</td></tr>{% endfor %}</table>{% endif %}
+<h2>How to read this report</h2><ul>{% for n in p.notes %}<li>{{ n }}</li>{% endfor %}</ul>
+</main></body></html>

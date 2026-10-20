@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block body %}
+<h1>Data health</h1>{% include "_datepick.html" %}
+<p>Worker heartbeat: <b>{{ heartbeat or "never" }}</b> (now {{ now }}). If stale, the worker is stopped or the computer was asleep.</p>
+{% if p %}<h2>Source coverage for {{ date }}</h2><table><tr><th>Source</th><th>State</th><th>Last success</th><th>Last failure</th><th>Gaps</th></tr>
+{% for k, h in p.data_health.items() %}<tr><td>{{ k }}</td><td><span class="badge {{ 'ok' if h.state=='ok' else 'bad' }}">{{ h.state }}</span></td><td>{{ h.last_success_at or "never" }}</td><td>{{ h.last_failure_at or "—" }} {{ h.last_failure_error or "" }}</td><td>{{ h.known_gaps|join("; ") }}</td></tr>{% endfor %}</table>{% endif %}
+<h2>Latest progress observation per course</h2><table><tr><th>Course</th><th>Latest snapshot</th></tr>{% for cid, ts in stale %}<tr><td>{{ cid }}</td><td>{{ fmt_local(ts) }}</td></tr>{% endfor %}</table>
+<h2>Job queue</h2><table><tr><th>Status</th><th>Count</th><th>Oldest age (s)</th></tr>{% for k, v in queue.items() %}<tr><td>{{ k }}</td><td>{{ v.count }}</td><td>{{ v.oldest_age_s }}</td></tr>{% endfor %}</table>
+{% if failed_jobs %}<h3>Failed jobs (review)</h3><table><tr><th>Kind</th><th>Key</th><th>Attempts</th><th>Error</th></tr>{% for j in failed_jobs %}<tr><td>{{ j.kind }}</td><td>{{ j.dedupe_key }}</td><td>{{ j.attempts }}</td><td>{{ j.last_error }}</td></tr>{% endfor %}</table>{% endif %}
+<h2>Scheduler events (missed runs, catch-ups)</h2><table><tr><th>At</th><th>Kind</th><th>Detail</th></tr>{% for e in events %}<tr><td>{{ fmt_local(e.at) }}</td><td>{{ e.kind }}</td><td>{{ json.dumps(e.detail) }}</td></tr>{% endfor %}</table>
+<h2>Sync runs</h2><table><tr><th>#</th><th>Source</th><th>Mode/method</th><th>Started</th><th>Status</th><th>Coverage</th><th>Window (UTC)</th><th>Parser</th><th>Error</th></tr>
+{% for r in runs %}<tr><td>{{ r.id }}</td><td>{{ r.source_name }}</td><td>{{ r.mode }}/{{ r.method }}</td><td>{{ fmt_local(r.started_at) }}</td><td>{{ r.status }}</td><td>{{ r.coverage_status }}</td><td>{{ r.coverage_start }} → {{ r.coverage_end }}</td><td>{{ r.parser_version }}</td><td>{{ r.error or "" }}</td></tr>{% endfor %}</table>
+{% endblock %}

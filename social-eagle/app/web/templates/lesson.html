@@ -1,0 +1,1 @@
+{% extends "base.html" %}{% block body %}<h1>{{ lesson.title }}</h1><p>{{ course.title }}{% if course.access_note %} · {{ course.access_note }}{% endif %}{% if lesson.optional %} · optional{% endif %}</p><div class="card">{{ lesson.body }}</div>{% endblock %}

@@ -1,0 +1,5 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in</title>{% include "_style.html" %}</head>
+<body><main><h1>Social Eagle Community Manager</h1><div class="card"><form method="post" action="/login">
+<label for="token">Admin token (from <code>data/admin_token</code>, printed by <code>scripts/setup.sh</code>)</label><br>
+<input id="token" name="token" type="password" autocomplete="current-password" required size="40"> <button type="submit">Sign in</button></form>
+{% if error %}<p class="bad">{{ error }}</p>{% endif %}</div></main></body></html>

@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block body %}
+<h1>{{ mem.display_name }} <span class="note">({{ mem.source_member_id }}, {{ mem.role }})</span></h1>
+<p><a class="btn" href="/members/{{ mem.id }}/evidence">Printable evidence report</a> <a class="btn" href="/members/{{ mem.id }}/evidence?format=json">Evidence JSON</a></p>
+{% if ev.member.previous_names %}<p>Previous names: {{ ev.member.previous_names|join(", ") }}</p>{% endif %}
+<h2>Batches, plan labels, course access</h2><table><tr><th>Type</th><th>Value</th><th>From</th><th>To</th></tr>
+{% for b in ev.batches %}<tr><td>Batch</td><td>{{ b.cohort }}</td><td>{{ b.from }}</td><td>{{ b.to or "current" }}</td></tr>{% endfor %}
+{% for b in ev.plan_labels %}<tr><td>Plan label</td><td>{{ b.label }} ({{ b.status }})</td><td>{{ b.from }}</td><td>{{ b.to or "current" }}</td></tr>{% endfor %}
+{% for b in ev.course_access %}<tr><td>Course access</td><td>{{ b.course }}</td><td>{{ b.from }}</td><td>{{ b.to or "current" }}</td></tr>{% endfor %}</table>
+<h2>Timeline</h2><table><tr><th>When (IST)</th><th>Side</th><th>Event</th><th>Source</th></tr>
+{% for t in ev.timeline %}<tr><td>{{ t.at_local }}</td><td>{{ t.side }}</td><td>{{ t.summary }}</td><td class="note">{% if t.source_ref and t.source_ref.startswith("https://www.skool.com/") %}<a href="{{ t.source_ref }}" rel="noopener noreferrer">source</a>{% else %}{{ t.source_ref or "" }}{% endif %}</td></tr>{% endfor %}</table>
+<h2>Internal notes</h2><form method="post" action="/members/{{ mem.id }}/notes"><input name="text" maxlength="2000" size="60" required aria-label="Note"> <button>Add note</button></form>
+<ul>{% for n in notes %}<li>{{ fmt_local(n.created_at) }} — {{ n.text }} <span class="note">({{ n.author }})</span></li>{% endfor %}</ul>
+<h2>Correct a record</h2><form method="post" action="/members/{{ mem.id }}/corrections"><select name="field" aria-label="Field"><option>display_name</option><option>role</option></select>
+<input name="value" required aria-label="New value"> <input name="reason" required placeholder="Reason (kept in audit trail)" size="40" aria-label="Reason"> <button>Save correction</button></form>
+{% if ev.corrections %}<table><tr><th>Field</th><th>Old</th><th>New</th><th>Reason</th><th>At</th></tr>{% for c in ev.corrections %}<tr><td>{{ c.field }}</td><td>{{ c.old }}</td><td>{{ c.new }}</td><td>{{ c.reason }}</td><td>{{ c.at }}</td></tr>{% endfor %}</table>{% endif %}
+{% endblock %}

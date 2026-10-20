@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block body %}
+{% from "_sections.html" import sec_wins with context %}
+<h1>Wins{% if c %} — {{ c.name }}{% endif %}</h1>
+{% include "_datepick.html" %}
+{% if not p %}<div class="card">No community data in this workspace yet.</div>{% else %}
+<p>Report status for {{ date }}: <span class="badge {{ p.status }}">{{ p.status }}</span> · data cutoff {{ p.data_cutoff_utc }}</p>
+{{ sec_wins(p.sections) }}{% endif %}
+{% endblock %}

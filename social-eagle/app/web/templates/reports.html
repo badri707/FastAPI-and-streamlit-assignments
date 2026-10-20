@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% block body %}
+<h1>Reports</h1>
+{% if c %}<div class="card"><form method="post" action="/reports/run">
+<input type="hidden" name="community" value="{{ c.id }}"><label>From <input type="date" name="first" value="{{ date }}" required></label>
+<label>To (optional) <input type="date" name="last"></label> <button>Run now (issue)</button></form>
+<form method="get" action="/reports/preview"><input type="hidden" name="community" value="{{ c.id }}"><label>Preview date <input type="date" name="first" value="{{ date }}" required></label> <button>Preview (not stored)</button></form>
+<p class="note">Scheduled daily at {{ "%02d:%02d"|format(9, 0) }} Asia/Kolkata for the previous local day (configurable). Identical re-runs return the existing report; changed data creates a new revision.</p></div>{% endif %}
+<table><tr><th>Date</th><th>Rev</th><th>Status</th><th>Trigger</th><th>Generated</th><th>Revision reason</th><th>Files</th></tr>
+{% for r in rows %}<tr><td><a href="/reports/{{ r.id }}">{{ r.report_date }}{% if r.range_end_date != r.report_date %} → {{ r.range_end_date }}{% endif %}</a></td><td>{{ r.revision }}</td><td><span class="badge {{ r.status }}">{{ r.status }}</span></td><td>{{ r.trigger }}</td><td>{{ fmt_local(r.generated_at) }}</td><td>{{ r.revision_reason or "" }}</td>
+<td><a href="/reports/{{ r.id }}/download/json">JSON</a> · <a href="/reports/{{ r.id }}/download/csv">CSV</a></td></tr>{% endfor %}</table>
+{% endblock %}

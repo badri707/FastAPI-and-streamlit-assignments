@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block body %}
+<h1>Settings</h1>
+<table><tr><th>Setting</th><th>Value</th></tr>
+<tr><td>Daily report time</td><td>{{ "%02d:%02d"|format(settings.report_hour_local, settings.report_minute_local) }} Asia/Kolkata (env SE_REPORT_HOUR / SE_REPORT_MINUTE)</td></tr>
+<tr><td>First staff response target</td><td>{{ settings.support_first_response_target_hours }} h, {{ settings.support_target_basis }} hours (demonstration value, not a company commitment)</td></tr>
+<tr><td>Working hours (for working-hour basis)</td><td>{{ settings.working_hours_start }}:00–{{ settings.working_hours_end }}:00 Mon–Sat IST</td></tr>
+<tr><td>New-member grace period</td><td>{{ settings.new_member_grace_days }} days</td></tr>
+<tr><td>Catch-up window</td><td>{{ settings.catchup_max_days }} days; older missed runs are recorded as expired</td></tr>
+<tr><td>Public read minimum interval</td><td>{{ settings.public_min_request_interval_s }} s per request</td></tr>
+<tr><td>Calculation version</td><td>{{ calc_version }}</td></tr>
+<tr><td>Private Skool access</td><td>Deferred — disabled until explicit authorization</td></tr>
+<tr><td>External delivery (email/Sheets)</td><td>Not configured; only in-app notifications</td></tr></table>
+<h2>Global pause</h2><form method="post" action="/settings/pause"><input type="hidden" name="paused" value="{{ '0' if paused else '1' }}"><button>{{ "Resume" if paused else "Pause" }} automation</button></form>
+<h2>Import a validated bundle (JSON)</h2><form method="post" action="/import" enctype="multipart/form-data"><input type="file" name="file" accept="application/json" required> <button>Import into {{ mode }} workspace</button></form>
+<p class="note">Bundles are validated against the import schema; synthetic bundles are accepted only in the test workspace.</p>
+{% endblock %}
