@@ -13,7 +13,7 @@ A local-first monitoring, reporting and support-accountability app for the Socia
 - Durable worker: restart-safe, catch-up after sleep, missed-run log, pause switch, in-app notification outbox.
 
 ## Limitations
-Runs only while your Mac is awake. The public reader is not yet verified. There is no AI, chat or reply drafting yet. There is no capacity benchmark yet. The UI is server-rendered rather than React (pending approval). All Social Eagle data in the test workspace is fictional.
+Runs only while your Mac is awake. The public reader reached the live page on the Mac but is not yet marked verified. AI-written answers need Ollama on your Mac; without it the bot quotes course material verbatim and says so. There is no capacity benchmark yet. The UI is server-rendered rather than React (pending approval). All Social Eagle data in the test workspace is fictional.
 
 ## Setup and daily use (macOS, Apple Silicon)
 ```bash
