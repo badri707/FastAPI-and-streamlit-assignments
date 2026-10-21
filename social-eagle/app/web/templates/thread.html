@@ -1,0 +1,34 @@
+{% extends "base.html" %}{% block body %}
+{% set back = "/community/post/" ~ post.id %}{% include "_actas.html" %}
+{% set a = authors.get(post.author_id) %}
+<p><a href="/community">← Community</a></p>
+<div class="card"><div class="note">{{ a.display_name if a else "?" }} · {{ fmt_local(post.created_at) }} · {{ post.category or "General" }}{% if versions > 1 %} · edited (v{{ versions }}){% endif %}</div>
+<h1 style="margin:.2em 0">{{ post.title }}</h1><div style="white-space:pre-wrap">{{ post.excerpt }}</div>
+<form method="post" action="/community/like" style="display:inline"><input type="hidden" name="target_type" value="post"><input type="hidden" name="target_id" value="{{ post.id }}"><input type="hidden" name="back" value="{{ post.id }}">
+<button>👍 Like ({{ likes.get(post.source_post_id, 0) }})</button></form></div>
+
+{% for q in questions %}<div class="card" style="border-color:var(--accent)">
+<b>Question register #{{ q.id }}</b> — state <span class="badge {{ 'ok' if q.state == 'closed' else ('bad' if q.state in ('new','awaiting_owner','blocked') else 'partial') }}">{{ q.state }}</span>
+{% if q.comment_id %}<span class="note">(asked in a comment)</span>{% endif %}
+<span class="note">· detection: {{ q.classification_origin }}</span><br>
+<span class="note">Last action:</span> {{ q.last_action or "—" }} · <span class="note">Next:</span> {{ q.next_action or "—" }}
+{% if q.escalation_reason %}<br><span class="note">Escalation:</span> {{ q.escalation_reason }}{% endif %}
+{% if q.closed_reason %}<br><span class="note">Closed:</span> {{ q.closed_reason }}{% endif %}
+<details><summary>Evidence events ({{ qevents[q.id]|length }})</summary><ul>{% for e in qevents[q.id] %}<li>{{ fmt_local(e.at) }} — {{ e.kind }}{% if e.note %} ({{ e.note }}){% endif %}</li>{% endfor %}</ul></details>
+<div class="noprint" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+<form method="post" action="/bot/run"><input type="hidden" name="back" value="/community/post/{{ post.id }}"><button>Run bot now</button></form>
+{% if q.state != "closed" %}<form method="post" action="/bot/question/{{ q.id }}/resolved"><input type="hidden" name="back" value="/community/post/{{ post.id }}"><button title="Simulates the asking member confirming">Member confirms solved</button></form>{% endif %}
+{% if q.state in ("answered","closed") %}<form method="post" action="/bot/question/{{ q.id }}/reopen"><input type="hidden" name="back" value="/community/post/{{ post.id }}"><button>Member says not solved</button></form>{% endif %}
+</div><p class="note">An answer is not resolution: only the member's confirmation (or staff closing with a reason) closes a question.</p></div>{% endfor %}
+
+<h2>Comments ({{ comments|length }})</h2>
+{% for cm in comments %}{% set ca = authors.get(cm.author_id) %}
+<div class="card" {% if cm.parent_comment_id %}style="margin-left:32px"{% endif %} id="c{{ cm.id }}">
+<div class="note">{{ ca.display_name if ca else "?" }}{% if ca and ca.role != "member" %} <span class="badge">{{ ca.role }}</span>{% endif %} · {{ fmt_local(cm.created_at) }}</div>
+<div style="white-space:pre-wrap">{{ cm.excerpt }}</div>
+<form method="post" action="/community/like" style="display:inline"><input type="hidden" name="target_type" value="comment"><input type="hidden" name="target_id" value="{{ cm.id }}"><input type="hidden" name="back" value="{{ post.id }}"><button>👍 {{ likes.get(cm.source_comment_id, 0) }}</button></form>
+{% if not cm.parent_comment_id %}<details style="display:inline"><summary>Reply</summary><form method="post" action="/community/post/{{ post.id }}/comment"><input type="hidden" name="parent" value="{{ cm.id }}"><textarea name="body" rows="2" style="width:100%" required></textarea><button>Reply as {{ actor.display_name }}</button></form></details>{% endif %}
+</div>{% endfor %}
+<div class="card"><form method="post" action="/community/post/{{ post.id }}/comment"><label for="cbody">Comment as <b>{{ actor.display_name }}</b> ({{ actor.role }})</label>
+<textarea id="cbody" name="body" rows="3" style="width:100%" required maxlength="5000"></textarea><button>Comment</button></form></div>
+{% endblock %}

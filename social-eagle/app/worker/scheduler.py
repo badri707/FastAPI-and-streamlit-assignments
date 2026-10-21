@@ -176,9 +176,21 @@ def tick(mode: Mode, clock: Clock, settings: Settings | None = None, owner: str 
                 failed = s.get(m.Job, job_id)
                 if failed is not None:
                     jobs.fail(s, failed, now, repr(exc))
+    bot_counts: dict[str, int] = {}
+    if mode is Mode.TEST:
+        from app.bot.ai import select_provider
+        from app.bot.engine import process_pending
+        provider = select_provider()
+        with session_scope(eng) as s:
+            from app.bot.community import extend_live_coverage
+            for c in s.scalars(select(m.Community).where(m.Community.is_synthetic)):
+                extend_live_coverage(s, c, now)
+                for o in process_pending(s, c, now, provider):
+                    if o.action != "skipped":
+                        bot_counts[o.action] = bot_counts.get(o.action, 0) + 1
     with session_scope(eng) as s:
         delivered = deliver_outbox(s, now)
-    return {"ran": ran, "delivered": delivered, "at": iso(now)}
+    return {"ran": ran, "delivered": delivered, "bot": bot_counts, "at": iso(now)}
 
 
 def run_forever(modes: list[Mode], interval_s: float = 30.0) -> None:

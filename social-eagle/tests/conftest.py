@@ -11,6 +11,12 @@ from app.connectors.importer import ingest_bundle
 from app.db import get_engine, reset_engines, session_scope
 
 
+@pytest.fixture(autouse=True)
+def _no_local_model(monkeypatch):
+    # Deterministic tests: never probe a local Ollama unless a test injects a mocked provider.
+    monkeypatch.setenv("SE_AI", "off")
+
+
 @pytest.fixture
 def settings(tmp_path):
     reset_engines()

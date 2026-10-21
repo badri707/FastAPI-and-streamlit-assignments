@@ -75,6 +75,20 @@ def _active(valid_from: datetime | None, valid_to: datetime | None, at: datetime
 
 # ---------------------------------------------------------------- data health
 
+def _union_covers(runs: Sequence[m.SyncRun], start: datetime, end: datetime) -> bool:
+    """True if the union of the runs' capture windows covers [start, end) without gaps."""
+    cur = start
+    for r in sorted(runs, key=lambda r: r.coverage_start or start):
+        if r.coverage_start is None or r.coverage_end is None:
+            continue
+        if r.coverage_start > cur:
+            return False
+        cur = max(cur, r.coverage_end)
+        if cur >= end:
+            return True
+    return cur >= end
+
+
 def source_health(ctx: Ctx) -> dict:
     expected = ctx.community.expected_sources or []
     runs = ctx.s.scalars(select(m.SyncRun).where(m.SyncRun.community_id == ctx.community.id,
@@ -86,14 +100,19 @@ def source_health(ctx: Ctx) -> dict:
     out = {}
     for src in expected:
         rs = by_source.get(src, [])
+        # Runs whose capture window overlaps the interval. Several consecutive runs (e.g. a live
+        # community capturing every few minutes) may jointly cover it.
         covering = [r for r in rs if r.status in ("success", "partial") and r.coverage_start is not None
-                    and r.coverage_end is not None and r.coverage_start <= ctx.start and r.coverage_end >= ctx.end]
+                    and r.coverage_end is not None and r.coverage_start < ctx.end and r.coverage_end > ctx.start]
         complete = [r for r in covering if r.status == "success" and r.coverage_status == "complete"]
         failures = [r for r in rs if r.status == "failed"]
         last_ok = max((r for r in rs if r.status in ("success", "partial")), key=lambda r: r.started_at, default=None)
-        if complete:
+        effective_end = min(ctx.end, ctx.cutoff)
+        if _union_covers(complete, ctx.start, ctx.end):
             state = "ok"
-        elif covering:
+        elif effective_end < ctx.end and _union_covers(complete, ctx.start, effective_end):
+            state = "in_progress"  # interval not finished yet; covered up to the cutoff
+        elif _union_covers(covering, ctx.start, ctx.end):
             state = "partial"
         elif failures:
             state = "failed"
@@ -102,6 +121,8 @@ def source_health(ctx: Ctx) -> dict:
         else:
             state = "missing"
         gaps = sorted({g for r in covering for g in (r.known_gaps or [])})
+        if state == "in_progress":
+            gaps.append("interval still in progress — covered only up to the data cutoff")
         out[src] = {
             "state": state,
             "last_success_at": iso(last_ok.finished_at) if last_ok else None,
@@ -122,7 +143,7 @@ def section_availability(health: dict) -> dict[str, str]:
             out[section] = "not_configured"
         elif h["state"] == "ok":
             out[section] = "ok"
-        elif h["state"] == "partial":
+        elif h["state"] in ("partial", "in_progress"):
             out[section] = "partial"
         else:
             out[section] = UNAVAILABLE
@@ -484,10 +505,15 @@ def question_state(ctx: Ctx, q: m.SupportQuestion, events: list[m.SupportEvent])
     clar = [e for e in evs if e.kind == "clarification_request" and (last_reopen is None or e.at > last_reopen)]
     member_replies = [e for e in evs if e.kind == "member_reply"]
     assigned = [e for e in evs if e.kind == "assigned"]
+    # An answer (staff reply, or a bot answer — not a bot acknowledgement) after the last reopen.
+    answers = [e for e in evs if (e.kind == "staff_response" or (e.kind == "bot_response" and (e.note or "").startswith("answer")))
+               and (last_reopen is None or e.at > last_reopen)]
     if resolved:
         state = "resolved"
-    elif clar and not any(r.at > clar[-1].at for r in member_replies):
+    elif clar and not any(r.at > clar[-1].at for r in member_replies) and not (answers and answers[-1].at > clar[-1].at):
         state = "awaiting_member"
+    elif answers and not any(r.at > answers[-1].at for r in member_replies):
+        state = "answered_unconfirmed"  # an answer is not resolution
     else:
         state = "awaiting_staff"
     first_staff = staff_resp[0].at if staff_resp else None
@@ -539,7 +565,9 @@ def support(ctx: Ctx) -> dict:
         "unresolved": sorted(unresolved, key=lambda s: -s["age_hours"]),
         "unresolved_awaiting_staff": sum(1 for s in unresolved if s["state_from_evidence"] == "awaiting_staff"),
         "unresolved_awaiting_member": sum(1 for s in unresolved if s["state_from_evidence"] == "awaiting_member"),
-        "target_breaches_open": [s for s in unresolved if s["first_response_target_breached"] and not s["first_staff_response_at"]],
+        "unresolved_answered_unconfirmed": sum(1 for s in unresolved if s["state_from_evidence"] == "answered_unconfirmed"),
+        "target_breaches_open": [s for s in unresolved if s["first_response_target_breached"]
+                                 and s["state_from_evidence"] == "awaiting_staff"],
         "note": "Staff, peer and bot responses are measured separately. A reply or acknowledgement is not resolution; "
                 "only resolution_confirmed/closed evidence counts.",
     }

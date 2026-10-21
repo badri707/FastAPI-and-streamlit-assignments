@@ -367,12 +367,20 @@ class SupportQuestion(ProvenanceMixin, Base):
     state: Mapped[str] = mapped_column(String(20), default="new")
     assigned_to_id: Mapped[int | None] = mapped_column(ForeignKey("members.id"))
     classification_origin: Mapped[str] = mapped_column(String(20), default=IMPORTED)
+    # Question-register workflow fields (spec 7A). Resolution is still derived from evidence events.
+    last_action: Mapped[str | None] = mapped_column(String(300))
+    next_action: Mapped[str | None] = mapped_column(String(300))
+    bot_attempts: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    clarifications_sent: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    escalation_reason: Mapped[str | None] = mapped_column(Text)
+    proposed_answer: Mapped[str | None] = mapped_column(Text)
+    closed_reason: Mapped[str | None] = mapped_column(String(300))
     __table_args__ = (UniqueConstraint("community_id", "source_question_id"), Index("ix_q_comm_asked", "community_id", "asked_at"))
 
 
 SUPPORT_EVENT_KINDS = (
     "staff_response", "peer_response", "bot_response", "clarification_request", "member_reply",
-    "assigned", "resolution_confirmed", "reopened", "closed",
+    "assigned", "resolution_confirmed", "reopened", "closed", "escalated",
 )
 
 
@@ -385,6 +393,20 @@ class SupportEvent(ProvenanceMixin, Base):
     actor_id: Mapped[int | None] = mapped_column(ForeignKey("members.id"))
     at: Mapped[datetime] = mapped_column(DateTime)
     note: Mapped[str | None] = mapped_column(Text)
+
+
+class KnowledgeItem(Base):
+    """Owner-approved answer that the bot may reuse. Personal exceptions must never be stored here."""
+    __tablename__ = "knowledge_items"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    community_id: Mapped[int] = mapped_column(ForeignKey("communities.id"), index=True)
+    question: Mapped[str] = mapped_column(Text)
+    answer: Mapped[str] = mapped_column(Text)
+    course_id: Mapped[int | None] = mapped_column(ForeignKey("courses.id"))  # restrict to members entitled to it
+    approved_by: Mapped[str] = mapped_column(String(120))
+    approved_at: Mapped[datetime] = mapped_column(DateTime)
+    from_question_id: Mapped[int | None] = mapped_column(ForeignKey("support_questions.id"))
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
 
 
 class LeaderboardSnapshot(ProvenanceMixin, Base):

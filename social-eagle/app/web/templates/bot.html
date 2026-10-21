@@ -1,0 +1,39 @@
+{% extends "base.html" %}{% block body %}
+<h1>Bot & owner inbox — {{ c.name }}</h1>
+{% if flash %}<div class="card">Bot run: {{ flash }}</div>{% endif %}
+<div class="card">Answer engine: <b>{{ provider }}</b>
+{% if provider == "extractive" %}<span class="note"> — no local AI model running, so answers quote approved course material verbatim and are labelled as quotes. Start Ollama to enable AI-written answers.</span>{% endif %}<br>
+Bot handles questions captured after {{ since or "its first run" }} automatically (older backlog only on request). Replies stay inside this synthetic workspace.
+<div style="display:flex;gap:6px;margin-top:6px"><form method="post" action="/bot/run"><button>Run bot now</button></form>
+<form method="post" action="/bot/run"><input type="hidden" name="backlog" value="1"><button title="Also process questions captured before the bot was switched on">Process backlog too</button></form></div></div>
+<div class="grid">{% for st in ["new","awaiting_member","awaiting_owner","answered","closed"] %}<div class="card kpi"><b>{{ counts.get(st, 0) }}</b>{{ st.replace("_"," ") }}</div>{% endfor %}</div>
+
+<h2>Owner inbox — needs your decision</h2>
+{% set pending = qs|selectattr("state","equalto","awaiting_owner")|list %}
+{% for q in pending %}{% set mm = members.get(q.member_id) %}
+<div class="card" style="border-color:var(--accent)"><b>{{ mm.display_name if mm else "?" }}</b> asked {{ fmt_local(q.asked_at) }} — <a href="/community/post/{{ q.post_id }}">open thread</a>
+<blockquote style="margin:6px 0">{{ q.text }}</blockquote>
+<div><span class="note">Why you:</span> {{ q.escalation_reason }}</div>
+{% if q.proposed_answer %}<details><summary>Proposed answer (from approved material)</summary><div style="white-space:pre-wrap">{{ q.proposed_answer }}</div></details>{% endif %}
+<form method="post" action="/bot/question/{{ q.id }}/answer"><textarea name="answer" rows="3" style="width:100%" placeholder="Your answer (posted in the thread by the selected staff member)" required>{{ q.proposed_answer or "" }}</textarea>
+<select name="staff" aria-label="Post as">{% for st in staff %}<option value="{{ st.source_member_id }}">{{ st.display_name }}</option>{% endfor %}</select>
+<label><input type="checkbox" name="save_knowledge" value="1"> Approve as reusable knowledge (general answers only — never personal exceptions)</label> <button>Post answer</button></form>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+<form method="post" action="/bot/question/{{ q.id }}/assign"><select name="staff" aria-label="Assign to">{% for st in staff %}<option value="{{ st.source_member_id }}">{{ st.display_name }}</option>{% endfor %}</select><button>Assign</button></form>
+<form method="post" action="/bot/question/{{ q.id }}/defer"><input name="reason" placeholder="defer reason" aria-label="Defer reason"><button>Defer</button></form>
+<form method="post" action="/bot/question/{{ q.id }}/close"><input name="reason" placeholder="close reason" required aria-label="Close reason"><button>Close</button></form></div></div>
+{% else %}<p>Nothing needs you right now.</p>{% endfor %}
+
+<h2>Question register</h2>
+<div class="table-wrap"><table><tr><th>Asked</th><th>Member</th><th>Question</th><th>State</th><th>Last action</th><th>Next action</th></tr>
+{% for q in qs %}{% set mm = members.get(q.member_id) %}<tr><td>{{ fmt_local(q.asked_at) }}</td><td>{{ mm.display_name if mm else "?" }}</td>
+<td>{% if q.post_id %}<a href="/community/post/{{ q.post_id }}">{{ (q.text or "")[:70] }}</a>{% else %}{{ (q.text or "")[:70] }}{% endif %}</td>
+<td><span class="badge {{ 'ok' if q.state == 'closed' else ('bad' if q.state in ('new','awaiting_owner','blocked') else 'partial') }}">{{ q.state }}</span></td><td>{{ q.last_action or "—" }}</td><td>{{ q.next_action or "—" }}</td></tr>{% endfor %}</table></div>
+
+<h2 id="knowledge">Approved knowledge ({{ knowledge|length }})</h2>
+<table><tr><th>Question</th><th>Answer</th><th>Approved</th></tr>{% for k in knowledge %}<tr id="knowledge-{{ k.id }}"><td>{{ k.question }}</td><td>{{ k.answer }}</td><td>{{ k.approved_by }}, {{ fmt_local(k.approved_at) }}</td></tr>{% endfor %}</table>
+<form method="post" action="/bot/knowledge" class="card"><b>Add approved answer</b><br><input name="question" required size="60" placeholder="Question" aria-label="Question"><br>
+<textarea name="answer" rows="2" style="width:100%" required placeholder="Approved answer" aria-label="Answer"></textarea><button>Save</button></form>
+
+<h2>Owner notifications (in-app)</h2><table><tr><th>Subject</th><th>State</th></tr>{% for n in notes %}<tr><td>{{ n.subject }}</td><td>{{ n.state }}</td></tr>{% endfor %}</table>
+{% endblock %}

@@ -38,5 +38,12 @@ Members → Rahul S. (`m-rahul`) → **Printable evidence report**. It shows his
 ## 6. Public mode
 Click **public**: banner "only logged-out public reads". The overview shows the external reference community with a **failed** sync and the actual error (`ProxyError: 403`). It does not show zero members.
 
+## 7. The bot in action (simulated community)
+1. Test workspace → **Community**. Choose *Acting as: Dev* and post in **Questions**: "How do I install the Meta pixel before running conversion campaigns?" Then click **Run bot now** in the thread (the worker also does this within 30 s). EagleBot replies with a quote from the Facebook ads basics lesson and its source link. The state is **answered**, not closed.
+2. Post "Can I get a refund for the annual plan?" The bot acknowledges the question and escalates it. Open **Bot & inbox** to see the reason, then answer as Coach Kavya from there.
+3. Post "help?" The bot asks one clarifying question. Reply in the thread with details and the bot resumes.
+4. Act as *Vikram (General)* and ask about the "high-ticket pricing playbook". The bot does not use VIP-only material and escalates instead. Ask the same as *Sana (VIP)* and she gets an answer.
+5. Click **Member confirms solved**: the question closes with the member's confirmation as evidence. Today's numbers appear on Overview, Support and Participation, marked *in progress* until the day ends.
+
 ## What this does not prove
-Live Skool parsing, accuracy on real Social Eagle data, AI answers (not built), capacity at 10k members (not measured), 24/7 availability (local only).
+Accuracy on real Social Eagle data, AI-written answer quality (no local model run yet; answers shown are verbatim quotes), capacity at 10k members (not measured), 24/7 availability (local only).

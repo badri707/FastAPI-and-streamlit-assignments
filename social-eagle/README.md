@@ -9,6 +9,7 @@ A local-first monitoring, reporting and support-accountability app for the Socia
 - Separate views for learning, participation, assignments, wins, support and leaderboard, plus data health.
 - Members directory and a per-member printable evidence report.
 - Three isolated workspaces: **public** (logged-out reads only), **test** (synthetic) and **private** (disabled).
+- **Main prototype**: a simulated Skool-style community (test workspace) where you act as fictional members and staff, and **EagleBot** answers questions with citations, asks for clarification, or escalates to the owner inbox.
 - Durable worker: restart-safe, catch-up after sleep, missed-run log, pause switch, in-app notification outbox.
 
 ## Limitations

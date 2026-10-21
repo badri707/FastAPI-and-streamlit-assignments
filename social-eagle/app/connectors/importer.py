@@ -271,7 +271,7 @@ class Bundle(_B):
     community: CommunityIn
     source_name: str
     source_ref: str
-    method: Literal["import", "fixture", "public_read"] = "import"
+    method: Literal["import", "fixture", "public_read", "local_sim"] = "import"
     observed_at: datetime
     status: Literal["success", "partial", "failed"] = "success"
     error: str | None = None

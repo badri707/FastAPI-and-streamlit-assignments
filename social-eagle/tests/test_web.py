@@ -111,3 +111,43 @@ def test_null_origin_refused_and_same_origin_allowed(client):
                      follow_redirects=False)
     assert ok.status_code == 303
     assert client.get("/settings").headers["referrer-policy"] == "same-origin"
+
+
+def test_community_simulator_and_bot_end_to_end(client, seeded):
+    assert client.get("/community").status_code == 200
+    client.post("/community/act-as", data={"member": "m-dev", "back": "/community"})
+    r = client.post("/community/post", data={"category": "Questions",
+                                             "title": "How do I install the Meta pixel before conversion campaigns?",
+                                             "body": "Stuck on lesson 3"}, follow_redirects=False)
+    thread_url = r.headers["location"]
+    assert "Question register" in client.get(thread_url).text
+    client.post("/bot/run", data={"back": thread_url})
+    page = client.get(thread_url).text
+    assert "EagleBot" in page and "Facebook ads basics" in page and "answered" in page
+    # owner escalation through the UI
+    r = client.post("/community/post", data={"category": "Questions", "title": "Can I get a refund?", "body": ""},
+                    follow_redirects=False)
+    client.post("/bot/run", data={})
+    inbox = client.get("/bot").text
+    assert "Owner inbox" in inbox and "refund request" in inbox
+    with session_scope(seeded) as s:
+        q = s.scalar(select(m.SupportQuestion).where(m.SupportQuestion.state == "awaiting_owner"))
+        qid = q.id
+    client.post(f"/bot/question/{qid}/answer", data={"answer": "Please email support — refunds follow the policy.",
+                                                     "staff": "s-coach"})
+    with session_scope(seeded) as s:
+        assert s.get(m.SupportQuestion, qid).state == "answered"
+    client.post(f"/bot/question/{qid}/resolved", data={})
+    with session_scope(seeded) as s:
+        assert s.get(m.SupportQuestion, qid).state == "closed"
+
+
+def test_simulator_refused_in_public_mode(client):
+    client.cookies.set("se_mode", "public")
+    assert client.get("/community").status_code == 400
+    assert client.post("/bot/run", data={}).status_code == 400
+
+
+def test_synthetic_thread_links_work(client):
+    r = client.get("/test/thread/p-dev-q", follow_redirects=False)
+    assert r.status_code == 303 and r.headers["location"].startswith("/community/post/")

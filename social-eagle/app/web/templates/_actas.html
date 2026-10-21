@@ -1,0 +1,5 @@
+<form class="card noprint" method="post" action="/community/act-as" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+<input type="hidden" name="back" value="{{ back }}">
+<label for="actas"><b>Acting as</b></label>
+<select id="actas" name="member">{% for mm in members %}<option value="{{ mm.source_member_id }}" {% if mm.id == actor.id %}selected{% endif %}>{{ mm.display_name }} ({{ mm.role }}, {{ mm.source_member_id }})</option>{% endfor %}</select>
+<button>Switch</button><span class="note">Simulated people in the synthetic workspace. Nothing is sent to Skool.</span></form>

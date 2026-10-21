@@ -18,6 +18,9 @@ from sqlalchemy import func, or_, select
 
 from app import models as m
 from app.bootstrap import init_db
+from app.bot import community as sim
+from app.bot import engine as bot
+from app.bot.ai import select_provider
 from app.config import CALC_VERSION, Mode, PrivateModeDisabled, Settings, get_settings
 from app.connectors.importer import ImportRejected, ingest_bundle
 from app.db import get_engine, session_scope
@@ -294,6 +297,195 @@ def create_app(settings: Settings | None = None, clock: Clock | None = None) -> 
                 raise HTTPException(404)
             course = s.get(m.Course, lsn.course_id)
         return page(request, "lesson.html", lesson=lsn, course=course)
+
+    # ------------------------------------------------------------ community simulator + bot (test mode)
+    def test_community(request: Request, s) -> m.Community:
+        if mode_of(request) is not Mode.TEST:
+            raise HTTPException(400, "The community simulator and bot actions run only in the test workspace.")
+        c = pick_community(s, request)
+        try:
+            return sim.require_test_community(c)
+        except sim.SimulatorError as exc:
+            raise HTTPException(400, str(exc)) from exc
+
+    def actor_of(request: Request, s, c: m.Community) -> m.Member:
+        sid = request.cookies.get("se_actor") or ""
+        mem = s.scalar(select(m.Member).where(m.Member.community_id == c.id, m.Member.source_member_id == sid))
+        if mem is None:
+            mem = s.scalar(select(m.Member).where(m.Member.community_id == c.id, m.Member.role == "member")
+                           .order_by(m.Member.display_name))
+        if mem is None:
+            raise HTTPException(400, "no members in this workspace")
+        return mem
+
+    def sim_call(fn, *a, **k):
+        try:
+            return fn(*a, **k)
+        except sim.SimulatorError as exc:
+            raise HTTPException(400, str(exc)) from exc
+
+    @app.post("/community/act-as")
+    def act_as(request: Request, member: str = Form(...), back: str = Form("/community")):
+        r = RedirectResponse(back if back.startswith("/") and not back.startswith("//") else "/community", status_code=303)
+        r.set_cookie("se_actor", member[:120], httponly=True, samesite="strict")
+        return r
+
+    @app.get("/community", response_class=HTMLResponse)
+    def community_feed(request: Request, cat: str = ""):
+        with session_scope(eng(request)) as s:
+            c = test_community(request, s)
+            actor = actor_of(request, s, c)
+            stmt = select(m.Post).where(m.Post.community_id == c.id, m.Post.deleted_confirmed_at.is_(None))
+            if cat:
+                stmt = stmt.where(m.Post.category == cat)
+            posts = s.scalars(stmt.order_by(m.Post.created_at.desc()).limit(60)).all()
+            cats = sorted({x for x in s.scalars(select(m.Post.category).where(m.Post.community_id == c.id)) if x})
+            members = s.scalars(select(m.Member).where(m.Member.community_id == c.id).order_by(m.Member.role,
+                                                                                            m.Member.display_name)).all()
+            authors = {mm.id: mm for mm in members}
+            qstate = {q.post_id: q.state for q in s.scalars(select(m.SupportQuestion).where(
+                m.SupportQuestion.community_id == c.id, m.SupportQuestion.comment_id.is_(None)))}
+            ccount = dict(s.execute(select(m.Comment.post_id, func.count()).group_by(m.Comment.post_id)).all())
+            lcount = dict(s.execute(select(m.Reaction.target_source_id, func.count()).where(
+                m.Reaction.target_type == "post", m.Reaction.removed_confirmed_at.is_(None))
+                .group_by(m.Reaction.target_source_id)).all())
+        return page(request, "community.html", c=c, actor=actor, posts=posts, cats=cats, cat=cat, members=members,
+                    authors=authors, qstate=qstate, ccount=ccount, lcount=lcount,
+                    post_categories=["General", "Questions", "Wins", "Assignments", "Announcements"])
+
+    @app.post("/community/post")
+    def community_post(request: Request, category: str = Form("General"), title: str = Form(..., max_length=300),
+                       body: str = Form("", max_length=5000)):
+        with session_scope(eng(request)) as s:
+            c = test_community(request, s)
+            actor = actor_of(request, s, c)
+            bot.bot_enabled_since(s, c, clock.now())  # switch the bot on before the first simulated question
+            post = sim_call(sim.create_post, s, c, actor.source_member_id, category, title, body, clock.now())
+            pid = post.id
+        return RedirectResponse(f"/community/post/{pid}", status_code=303)
+
+    @app.get("/community/post/{post_id}", response_class=HTMLResponse)
+    def community_thread(request: Request, post_id: int):
+        with session_scope(eng(request)) as s:
+            c = test_community(request, s)
+            post = s.get(m.Post, post_id)
+            if post is None or post.community_id != c.id:
+                raise HTTPException(404)
+            actor = actor_of(request, s, c)
+            comments = s.scalars(select(m.Comment).where(m.Comment.post_id == post.id).order_by(m.Comment.created_at,
+                                                                                                 m.Comment.id)).all()
+            members = s.scalars(select(m.Member).where(m.Member.community_id == c.id).order_by(m.Member.role,
+                                                                                            m.Member.display_name)).all()
+            authors = {mm.id: mm for mm in members}
+            questions = s.scalars(select(m.SupportQuestion).where(m.SupportQuestion.post_id == post.id)).all()
+            qevents = {q.id: s.scalars(select(m.SupportEvent).where(m.SupportEvent.question_id == q.id)
+                                       .order_by(m.SupportEvent.at)).all() for q in questions}
+            likes = dict(s.execute(select(m.Reaction.target_source_id, func.count()).where(
+                m.Reaction.removed_confirmed_at.is_(None), m.Reaction.community_id == c.id)
+                .group_by(m.Reaction.target_source_id)).all())
+            versions = post.version
+        return page(request, "thread.html", c=c, post=post, comments=comments, authors=authors, actor=actor,
+                    members=members, questions=questions, qevents=qevents, likes=likes, versions=versions)
+
+    @app.post("/community/post/{post_id}/comment")
+    def community_comment(request: Request, post_id: int, body: str = Form(..., max_length=5000),
+                          parent: int | None = Form(None)):
+        with session_scope(eng(request)) as s:
+            c = test_community(request, s)
+            actor = actor_of(request, s, c)
+            bot.bot_enabled_since(s, c, clock.now())
+            sim_call(sim.create_comment, s, c, actor.source_member_id, post_id, body, clock.now(), parent_comment_id=parent)
+        return RedirectResponse(f"/community/post/{post_id}", status_code=303)
+
+    @app.post("/community/like")
+    def community_like(request: Request, target_type: str = Form(...), target_id: int = Form(...),
+                       back: int = Form(...)):
+        if target_type not in ("post", "comment"):
+            raise HTTPException(400)
+        with session_scope(eng(request)) as s:
+            c = test_community(request, s)
+            actor = actor_of(request, s, c)
+            sim_call(sim.like, s, c, actor.source_member_id, target_type, target_id, clock.now())
+        return RedirectResponse(f"/community/post/{back}", status_code=303)
+
+    def _question(s, c, qid: int) -> m.SupportQuestion:
+        q = s.get(m.SupportQuestion, qid)
+        if q is None or q.community_id != c.id:
+            raise HTTPException(404)
+        return q
+
+    @app.post("/bot/question/{qid}/{action}")
+    def question_action(request: Request, qid: int, action: str, staff: str = Form(""), answer: str = Form(""),
+                        reason: str = Form(""), save_knowledge: str = Form(""), back: str = Form("/bot")):
+        with session_scope(eng(request)) as s:
+            c = test_community(request, s)
+            q = _question(s, c, qid)
+            now = clock.now()
+            if action == "resolved":
+                sim_call(sim.confirm_resolved, s, c, q, now)
+            elif action == "reopen":
+                sim_call(sim.reopen, s, c, q, now)
+            elif action == "answer":
+                if not answer.strip():
+                    raise HTTPException(400, "answer is empty")
+                sim_call(bot.owner_answer, s, c, q, staff, answer.strip()[:5000], now, save_as_knowledge=bool(save_knowledge))
+            elif action == "assign":
+                sim_call(bot.owner_assign, s, c, q, staff, now)
+            elif action == "close":
+                sim_call(bot.owner_close, s, c, q, (reason or "closed by owner")[:300], now)
+            elif action == "defer":
+                q.next_action = f"Deferred by owner: {(reason or 'no reason given')[:200]}"
+            else:
+                raise HTTPException(400, "unknown action")
+        return RedirectResponse(back if back.startswith("/") and not back.startswith("//") else "/bot", status_code=303)
+
+    @app.post("/bot/run")
+    def bot_run(request: Request, backlog: str = Form(""), back: str = Form("/bot")):
+        with session_scope(eng(request)) as s:
+            c = test_community(request, s)
+            outcomes = bot.process_pending(s, c, clock.now(), select_provider(), include_backlog=bool(backlog))
+            summary = ", ".join(f"{o.action}" for o in outcomes if o.action != "skipped") or "nothing to do"
+        r = RedirectResponse(back if back.startswith("/") and not back.startswith("//") else "/bot", status_code=303)
+        r.set_cookie("se_flash", summary[:200], max_age=10, samesite="strict")
+        return r
+
+    @app.get("/bot", response_class=HTMLResponse)
+    def bot_page(request: Request):
+        with session_scope(eng(request)) as s:
+            c = test_community(request, s)
+            counts = bot.register_counts(s, c)
+            qs = s.scalars(select(m.SupportQuestion).where(m.SupportQuestion.community_id == c.id)
+                           .order_by(m.SupportQuestion.asked_at.desc()).limit(100)).all()
+            members = {mm.id: mm for mm in s.scalars(select(m.Member).where(m.Member.community_id == c.id))}
+            staff = [mm for mm in members.values() if mm.role in ("staff", "admin")]
+            notes = s.scalars(select(m.OutboxMessage).where(m.OutboxMessage.recipient == "owner")
+                              .order_by(m.OutboxMessage.id.desc()).limit(30)).all()
+            knowledge = s.scalars(select(m.KnowledgeItem).where(m.KnowledgeItem.community_id == c.id)
+                                  .order_by(m.KnowledgeItem.id.desc())).all()
+            since = s.get(m.AppState, f"bot:enabled_since:{c.slug}")
+            provider = select_provider().name
+        return page(request, "bot.html", c=c, counts=counts, qs=qs, members=members, staff=staff, notes=notes,
+                    knowledge=knowledge, since=since.value if since else None, provider=provider,
+                    flash=request.cookies.get("se_flash"))
+
+    @app.post("/bot/knowledge")
+    def add_knowledge(request: Request, question: str = Form(..., max_length=1000), answer: str = Form(..., max_length=5000)):
+        with session_scope(eng(request)) as s:
+            c = test_community(request, s)
+            s.add(m.KnowledgeItem(community_id=c.id, question=question.strip(), answer=answer.strip(),
+                                  approved_by="owner", approved_at=clock.now()))
+        return RedirectResponse("/bot#knowledge", status_code=303)
+
+    @app.get("/test/thread/{source_post_id}")
+    def synthetic_thread_link(request: Request, source_post_id: str):
+        with session_scope(get_engine(Mode.TEST, settings)) as s:
+            post = s.scalar(select(m.Post).where(m.Post.source_post_id == source_post_id))
+            if post is None:
+                raise HTTPException(404)
+            pid = post.id
+        r = RedirectResponse(f"/community/post/{pid}", status_code=303)
+        r.set_cookie("se_mode", "test", httponly=True, samesite="strict")
+        return r
 
     @app.get("/settings", response_class=HTMLResponse)
     def settings_page(request: Request):

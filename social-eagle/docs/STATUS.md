@@ -1,6 +1,6 @@
 # STATUS — Social Eagle Community Manager
 
-Last updated: **2026-10-20** (session 1). Branch: `claude/social-eagle-skool-bot-7nnj0i`. Project folder: `social-eagle/`.
+Last updated: **2026-10-21** (session 2). Branch: `claude/social-eagle-skool-bot-7nnj0i`. Project folder: `social-eagle/`.
 
 ## Headline (evidence-backed)
 
@@ -11,6 +11,22 @@ Last updated: **2026-10-20** (session 1). Branch: `claude/social-eagle-skool-bot
 | Private integration | **Deferred** (by design) | Private mode raises `PrivateModeDisabled` in the DB layer, connector registry and web layer (tested). |
 
 So the accurate phrase today is: **"Local workflows verified; public Skool reads implemented but unverified; private integration deferred."** Do not say "public reads verified" until step 1 below passes.
+
+## Update 2026-10-21 (later) — main prototype: simulated community + working bot
+The owner asked for an "exact main prototype" before any private access. Built, in the **test workspace only**:
+- **Community simulator** (`/community`): a Skool-style feed and threads where you act as any fictional member or staff (`Acting as`) to post, comment, reply, like, confirm "solved" or reopen. Every action goes through the validated importer as a `local_sim` capture, so reports, member timelines and data health update from it. Nothing is sent to Skool.
+- **Bot engine** (`app/bot/engine.py`, spec 7A): rule-based question detection (labelled `rule_based`), permission-scoped retrieval (lessons the asker is entitled to plus owner-approved answers), and these routes:
+  - answer with citations
+  - one clarification, then resume when the member replies
+  - escalate to the owner for refunds, billing, deadline extensions, exceptions, complaints, explicit human requests, no supporting material, or a reopen after a bot answer
+  - owner inbox (`/bot`): answer, assign, defer, close; optionally save the answer as approved knowledge, which the bot then reuses
+- **Answer generation** (`app/bot/ai.py`): a real Ollama adapter (loopback only, JSON output validated, citations must refer to the given sources, circuit breaker). When no model is running, an **extractive** mode quotes course text verbatim and labels it "quoted, not AI-generated". **No local model has been run yet**: Ollama isn't installable in the cloud sandbox. The AI path is tested only with a mocked HTTP endpoint.
+- **Reports and metrics**: new evidence state `answered_unconfirmed` (an answer is not resolution). Sources may now be covered by several consecutive captures. A day still in progress shows as `in_progress` (partial), not complete. The worker extends coverage for the live simulator and runs the bot every tick in test mode. The pause switch stops bot actions.
+- 75 tests pass (21 new). Verified in a real Chromium run with screenshots `docs/screenshots/bot_answer_thread.png`, `bot_owner_inbox.png` and `community_feed.png`.
+
+**Simulated / unverified:** all people and threads are fictional; question detection is a keyword rule, not AI; AI answer quality is **not measured** (needs Ollama on the Mac); the bot has never posted to Skool and cannot.
+
+**Next for the prototype:** on the Mac, `brew install ollama && ollama pull llama3.2:3b` (check its license and RAM use first). The bot page will then show `ai:llama3.2:3b`. Run the AI evaluation set (30+ cases) and record answer quality.
 
 ## Update 2026-10-21 — first live read on the owner's Mac
 - `public-sync` reached https://www.skool.com/ai-automation-society logged-out (no login wall). It printed `success new=0 changed=0`.

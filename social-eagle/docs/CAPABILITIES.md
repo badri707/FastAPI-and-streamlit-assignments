@@ -33,7 +33,12 @@ Evidence date for everything below: 2026-10-20. Scope: this repository on the cl
 | Admin login, loopback Host check, Origin/CSRF check | n/a | verified (also in a real Chromium run) | n/a | `test_requires_login_and_loopback`, `test_null_origin_refused_and_same_origin_allowed` |
 | Backup and restore to a separate location, checksum | n/a | verified | n/a | `test_backup_and_restore_into_separate_location` |
 | Migrations match models | n/a | verified | n/a | `test_migrations_match_models` |
-| Local AI (Ollama), chat, drafts, question routing | **not built** | **not built** | deferred | — |
+| Community simulator (post/comment/like/resolve/reopen as fictional people) | n/a | verified | deferred | `test_web.py::test_community_simulator_and_bot_end_to_end` |
+| Question routing: answer with citation / clarify + resume / escalate to owner / no loop on reopen | drafts not built yet | verified (extractive answers) | deferred | `test_bot.py` |
+| Permission scope in bot answers (VIP material never used for a General member) | n/a | verified | deferred | `test_vip_material_never_used_for_general_member` |
+| Owner inbox: answer, assign, defer, close, approved-knowledge reuse, single notification per question version | n/a | verified | deferred | `test_owner_*` |
+| Local AI answers via Ollama | n/a | **adapter tested with mocked HTTP only; no real model run** | deferred | `test_ollama_*` |
+| AI answer quality evaluation (30+ cases) | **not built** | **not built** | — | — |
 | Capacity benchmark / load test | **not built** | **not built** | — | — |
 | PostgreSQL backend | **not built** | — | — | — |
 | React/Vite frontend | **not built** (server-rendered UI instead) | — | — | — |

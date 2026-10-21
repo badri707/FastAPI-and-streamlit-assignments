@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% block body %}
+<h1>Community (simulated) — {{ c.name }}</h1>
+{% set back = "/community" %}{% include "_actas.html" %}
+<div class="card"><form method="post" action="/community/post">
+<h3 style="margin-top:0">New post as {{ actor.display_name }}</h3>
+<select name="category" aria-label="Category">{% for k in post_categories %}<option>{{ k }}</option>{% endfor %}</select>
+<input name="title" required maxlength="300" size="50" placeholder="Title (questions: end with ?)" aria-label="Title"><br>
+<textarea name="body" rows="3" maxlength="5000" style="width:100%;margin-top:6px" placeholder="Write something…" aria-label="Body"></textarea>
+<button>Post</button> <span class="note">Questions are detected by category "Questions" or a question-style title (rule-based, labelled).</span></form></div>
+<p class="noprint">Filter: <a href="/community">All</a>{% for k in cats %} · <a href="/community?cat={{ k|urlencode }}">{{ k }}</a>{% endfor %}</p>
+{% for p in posts %}{% set a = authors.get(p.author_id) %}
+<div class="card"><div class="note">{{ a.display_name if a else "?" }}{% if a and a.role != "member" %} <span class="badge">{{ a.role }}</span>{% endif %} · {{ fmt_local(p.created_at) }} · {{ p.category or "General" }}
+{% if p.id in qstate %} · question: <span class="badge {{ 'ok' if qstate[p.id] == 'closed' else ('bad' if qstate[p.id] in ('new','awaiting_owner','blocked') else 'partial') }}">{{ qstate[p.id] }}</span>{% endif %}</div>
+<a href="/community/post/{{ p.id }}"><b>{{ p.title }}</b></a>
+<div>{{ (p.excerpt or "")[:220] }}</div>
+<div class="note">👍 {{ lcount.get(p.source_post_id, 0) }} · 💬 {{ ccount.get(p.id, 0) }}{% if p.version > 1 %} · edited{% endif %}</div></div>
+{% else %}<p>No posts yet.</p>{% endfor %}
+{% endblock %}
