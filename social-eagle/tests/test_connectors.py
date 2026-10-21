@@ -147,3 +147,20 @@ def test_workspace_isolation(settings):
         with pytest.raises(ImportRejected):
             ingest_bundle(s, public_like, Mode.TEST, NOW)
     assert settings.db_path(Mode.PUBLIC) != settings.db_path(Mode.TEST)
+
+
+def test_group_without_recognised_posts_is_a_failure_not_success(settings):
+    html = HTML.replace('"postTrees"', '"somethingElse"').replace('"metadata":{"title"', '"meta":{"title"')
+    con, _ = connector(settings, {("www.skool.com", "/robots.txt"): ROBOTS_OK,
+                                  ("www.skool.com", "/example-group"): httpx.Response(200, text=html)})
+    b = con.fetch_bundle(SRC, NOW)
+    assert b["status"] == "failed" and "no posts recognised" in b["error"]
+
+
+def test_inspect_prints_structure_without_values(settings):
+    from app.connectors.public_skool import inspect_cached_page
+    con, _ = connector(settings, {("www.skool.com", "/robots.txt"): ROBOTS_OK,
+                                  ("www.skool.com", "/example-group"): httpx.Response(200, text=HTML)})
+    con.fetch_bundle(SRC, NOW)
+    out = inspect_cached_page(settings.data_dir / "public_cache")
+    assert "postTrees" in out and "Ada" not in out and "Welcome" not in out

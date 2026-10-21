@@ -243,7 +243,10 @@ def parse_group_page(html: str, url: str) -> dict:
         })
     posts = [p for p in posts if p["id"]]
     if not posts:
-        warnings.append("no posts visible in this page")
+        # A public feed with zero recognisable posts almost always means the page structure differs
+        # from what this parser expects. Report it as a failure rather than a successful empty read.
+        raise ParseFailed("group found but no posts recognised (page structure differs from parser "
+                          "expectations; run `python -m app.cli public-inspect`)")
     return {"community": community, "posts": posts, "authors": authors, "warnings": warnings}
 
 
@@ -295,3 +298,39 @@ class PublicReadConnector:
 
 def load_snapshot(path: Path) -> str:
     return path.read_text(encoding="utf-8")
+
+
+def structure_skeleton(obj, depth: int = 0, max_depth: int = 6, key: str = "") -> list[str]:
+    """Describe JSON shape only (keys, types, lengths) — no values, so no member content is printed."""
+    pad = "  " * depth
+    if depth > max_depth:
+        return [f"{pad}{key}…"]
+    if isinstance(obj, dict):
+        out = [f"{pad}{key}{{}} {len(obj)} keys"]
+        for k, v in list(obj.items())[:40]:
+            out += structure_skeleton(v, depth + 1, max_depth, f"{k}: ")
+        return out
+    if isinstance(obj, list):
+        out = [f"{pad}{key}[] len={len(obj)}"]
+        if obj:
+            out += structure_skeleton(obj[0], depth + 1, max_depth, "[0]: ")
+        return out
+    return [f"{pad}{key}{type(obj).__name__}"]
+
+
+def inspect_cached_page(cache_dir: Path) -> str:
+    files = sorted(cache_dir.glob("*.html"), key=lambda p: p.stat().st_mtime)
+    if not files:
+        return "No cached public page. Run public-sync first."
+    html = files[-1].read_text(encoding="utf-8")
+    lines = [f"file: {files[-1].name}  size: {len(html)} chars"]
+    m = _NEXT.search(html)
+    if not m:
+        lines.append("no __NEXT_DATA__ script found")
+        scripts = re.findall(r"<script[^>]*>", html)[:30]
+        lines.append(f"script tags ({len(scripts)} shown): " + " | ".join(s[:80] for s in scripts))
+        return "\n".join(lines)
+    data = json.loads(m.group(1))
+    props = data.get("props", {}).get("pageProps", {})
+    lines += structure_skeleton(props, max_depth=5, key="pageProps: ")
+    return "\n".join(lines)

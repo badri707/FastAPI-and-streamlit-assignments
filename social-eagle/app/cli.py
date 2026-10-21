@@ -159,6 +159,12 @@ def cmd_public_sync(a) -> int:
     return rc
 
 
+def cmd_public_inspect(_a) -> int:
+    from app.connectors.public_skool import inspect_cached_page
+    print(inspect_cached_page(_settings().data_dir / "public_cache"))
+    return 0
+
+
 def _sha(p: Path) -> str:
     return hashlib.sha256(p.read_bytes()).hexdigest()
 
@@ -263,6 +269,7 @@ def main(argv=None) -> int:
     p.add_argument("--mode", default="test", choices=["public", "test"])
     p.set_defaults(fn=cmd_tick)
     sub.add_parser("public-sync").set_defaults(fn=cmd_public_sync)
+    sub.add_parser("public-inspect").set_defaults(fn=cmd_public_inspect)
     p = sub.add_parser("backup")
     p.add_argument("--out")
     p.set_defaults(fn=cmd_backup)

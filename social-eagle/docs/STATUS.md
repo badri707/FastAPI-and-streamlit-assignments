@@ -12,6 +12,9 @@ Last updated: **2026-10-20** (session 1). Branch: `claude/social-eagle-skool-bot
 
 So the accurate phrase today is: **"Local workflows verified; public Skool reads implemented but unverified; private integration deferred."** Do not say "public reads verified" until step 1 below passes.
 
+## Update 2026-10-21 — first live read on the owner's Mac
+`public-sync` against https://www.skool.com/ai-automation-society reached the page (no login wall, no block) but reported `success new=0 changed=0`. This means the page loaded but the parser recognised **zero posts**. The real markup differs from the parser's assumption. That outcome was wrongly labelled success; it is now a `ParseFailed` failure (test added). Next: the owner runs `uv run python -m app.cli public-inspect` (prints JSON keys and types only, no content) so the parser can be fixed. Public reads remain **unverified**.
+
 ## What works (verified by tests or a real run)
 
 - **Data model**: normalized SQLite schema (communities, members and name history, cohorts and memberships, plan-label history, courses and lessons, entitlements, enrolments, lesson deadlines, progress snapshots, posts, comments, content versions, reactions, assignments, submissions, feedback, wins, support questions and events, leaderboard snapshots, sync runs, report runs, jobs, outbox, audit log). Each record has provenance: source ref, mode, method, field origin, observed time, precision, displayed value, hash, parser version and sync run. Alembic migration; a test checks that the migration matches the models.
