@@ -13,7 +13,11 @@ Last updated: **2026-10-20** (session 1). Branch: `claude/social-eagle-skool-bot
 So the accurate phrase today is: **"Local workflows verified; public Skool reads implemented but unverified; private integration deferred."** Do not say "public reads verified" until step 1 below passes.
 
 ## Update 2026-10-21 — first live read on the owner's Mac
-`public-sync` against https://www.skool.com/ai-automation-society reached the page (no login wall, no block) but reported `success new=0 changed=0`. This means the page loaded but the parser recognised **zero posts**. The real markup differs from the parser's assumption. That outcome was wrongly labelled success; it is now a `ParseFailed` failure (test added). Next: the owner runs `uv run python -m app.cli public-inspect` (prints JSON keys and types only, no content) so the parser can be fixed. Public reads remain **unverified**.
+- `public-sync` reached https://www.skool.com/ai-automation-society logged-out (no login wall). It printed `success new=0 changed=0`.
+- The owner ran `public-inspect --full` (keys and types only). The real page matches the parser's expected structure: `pageProps.postTrees[33].post.{id,name,metadata{title,content,upvotes,comments,...},createdAt,labelId,user{...}}` and `currentGroup.{id,name,metadata{displayName,totalMembers,totalOnlineMembers,...},labels[]}`.
+- Likely explanation for `new=0`: the background worker's own public refresh, which runs right after `start.sh`, had already ingested the posts. A repeat read correctly found no new records. **Awaiting confirmation** from the owner's `public.db` counts (sqlite3 query in chat). Public reads are not marked verified until then.
+- Fixes: post categories now come from `currentGroup.labels[]` via `labelId`. A category change is no longer counted as an edit. A read that recognises zero posts is now a `ParseFailed` failure rather than a success.
+- Privacy: the page's user objects contain fields such as email, bio, social links and location. The parser stores **only** the user id and display name.
 
 ## What works (verified by tests or a real run)
 

@@ -559,7 +559,7 @@ def _versioned(ctx: _Ctx, model, entity_type: str, where: dict, content: dict, v
         tally("changed")
     else:
         # Same content; still refresh displayed counters without creating a version.
-        for k in ("displayed_like_count", "displayed_comment_count"):
+        for k in ("displayed_like_count", "displayed_comment_count", "category"):
             if k in values and values[k] is not None:
                 setattr(obj, k, values[k])
         tally("same")
@@ -576,7 +576,8 @@ def _ingest_activity(ctx: _Ctx, tally) -> None:
         return posts[sid]
 
     for p in b.posts:
-        content = {"title": p.title, "body": p.body, "category": p.category}
+        # Category is classification metadata, not authored text: changing it is not an "edit".
+        content = {"title": p.title, "body": p.body}
         prov = ctx.prov(content, precision=p.timestamp_precision, displayed=p.displayed_time, ref=p.url)
         prov.pop("record_hash")
         posts[p.id] = _versioned(ctx, m.Post, "post", {"community_id": c.id, "source_post_id": p.id}, content,

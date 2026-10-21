@@ -60,6 +60,8 @@ def test_public_page_becomes_records_and_refresh_does_not_duplicate(settings, mo
         assert relative.created_at is None and relative.timestamp_precision == "unknown"
         assert relative.displayed_value == "yesterday"
         assert all(p.is_excerpt for p in s.scalars(select(m.Post)))
+        cats = {p.source_post_id: p.category for p in s.scalars(select(m.Post))}
+        assert cats == {"p-1": "General", "p-2": "Questions", "p-3": None}
     for r in spy.requests:
         assert r.method == "GET"
         assert "authorization" not in r.headers and "cookie" not in r.headers

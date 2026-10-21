@@ -211,6 +211,9 @@ def parse_group_page(html: str, url: str) -> dict:
         "displayed_member_total": _display(gmeta.get("totalMembers")),
         "displayed_online": _display(gmeta.get("totalOnlineMembers")),
     }
+    # Category names live in currentGroup.labels[]; posts reference them by labelId (observed 2026-10-21).
+    label_names = {lb.get("id"): (lb.get("metadata") or {}).get("displayName")
+                   for lb in (group.get("labels") or []) if isinstance(lb, dict)}
     trees = props.get("postTrees")
     if trees is None:
         trees = list(_walk(props, lambda d: "post" in d and isinstance(d["post"], dict) and "metadata" in d["post"]))
@@ -238,7 +241,7 @@ def parse_group_page(html: str, url: str) -> dict:
             "body": (meta.get("content") or "")[:500], "is_excerpt": True,
             "created_at": iso(created_ts) if created_ts else None, "timestamp_precision": precision,
             "displayed_time": created, "like_count": meta.get("upvotes"), "comment_count": meta.get("comments"),
-            "category": meta.get("labels") or p.get("labelId"),
+            "category": label_names.get(p.get("labelId")) or None,
             "url": f"https://www.skool.com/{community['slug']}/{slug}" if slug else url,
         })
     posts = [p for p in posts if p["id"]]
