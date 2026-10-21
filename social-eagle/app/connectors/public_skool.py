@@ -334,3 +334,45 @@ def inspect_cached_page(cache_dir: Path) -> str:
     props = data.get("props", {}).get("pageProps", {})
     lines += structure_skeleton(props, max_depth=5, key="pageProps: ")
     return "\n".join(lines)
+
+
+_POSTISH = {"title", "createdAt", "created_at", "metadata", "content", "upvotes", "comments", "user", "userId", "post"}
+
+
+def short_summary(cache_dir: Path, limit: int = 8) -> str:
+    """Compact summary: pageProps keys and the JSON paths of lists that look like post lists (keys only)."""
+    files = sorted(cache_dir.glob("*.html"), key=lambda p: p.stat().st_mtime)
+    if not files:
+        return "No cached public page. Run public-sync first."
+    html = files[-1].read_text(encoding="utf-8")
+    m = _NEXT.search(html)
+    if not m:
+        return f"no __NEXT_DATA__ found; page size {len(html)} chars"
+    props = json.loads(m.group(1)).get("props", {}).get("pageProps", {})
+    lines = ["pageProps keys: " + ", ".join(list(props)[:30])]
+    found: list[tuple[int, str, list]] = []
+
+    def walk(o, path):
+        if isinstance(o, dict):
+            for k, v in o.items():
+                walk(v, f"{path}.{k}")
+        elif isinstance(o, list):
+            dicts = [x for x in o if isinstance(x, dict)]
+            if len(dicts) >= 2:
+                score = len(_POSTISH & set(dicts[0]))
+                if score:
+                    found.append((score, path, dicts))
+            for i, x in enumerate(o[:1]):
+                walk(x, f"{path}[{i}]")
+
+    walk(props, "pageProps")
+    found.sort(key=lambda t: -t[0])
+    lines.append(f"candidate post lists: {len(found)}")
+    for _score, path, dicts in found[:limit]:
+        first = dicts[0]
+        inner = {k: sorted(v)[:15] for k, v in first.items() if isinstance(v, dict)}
+        lines.append(f"- {path}  (items={len(dicts)})")
+        lines.append(f"    keys: {sorted(first)[:25]}")
+        for k, v in list(inner.items())[:4]:
+            lines.append(f"    {k}.keys: {v}")
+    return "\n".join(lines)

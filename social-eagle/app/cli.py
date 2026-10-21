@@ -159,9 +159,10 @@ def cmd_public_sync(a) -> int:
     return rc
 
 
-def cmd_public_inspect(_a) -> int:
-    from app.connectors.public_skool import inspect_cached_page
-    print(inspect_cached_page(_settings().data_dir / "public_cache"))
+def cmd_public_inspect(a) -> int:
+    from app.connectors.public_skool import inspect_cached_page, short_summary
+    cache = _settings().data_dir / "public_cache"
+    print(inspect_cached_page(cache) if a.full else short_summary(cache))
     return 0
 
 
@@ -269,7 +270,9 @@ def main(argv=None) -> int:
     p.add_argument("--mode", default="test", choices=["public", "test"])
     p.set_defaults(fn=cmd_tick)
     sub.add_parser("public-sync").set_defaults(fn=cmd_public_sync)
-    sub.add_parser("public-inspect").set_defaults(fn=cmd_public_inspect)
+    p = sub.add_parser("public-inspect")
+    p.add_argument("--full", action="store_true", help="print the full structure (long)")
+    p.set_defaults(fn=cmd_public_inspect)
     p = sub.add_parser("backup")
     p.add_argument("--out")
     p.set_defaults(fn=cmd_backup)

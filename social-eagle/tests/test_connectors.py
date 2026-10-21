@@ -164,3 +164,13 @@ def test_inspect_prints_structure_without_values(settings):
     con.fetch_bundle(SRC, NOW)
     out = inspect_cached_page(settings.data_dir / "public_cache")
     assert "postTrees" in out and "Ada" not in out and "Welcome" not in out
+
+
+def test_short_summary_finds_post_list_without_values(settings):
+    from app.connectors.public_skool import short_summary
+    con, _ = connector(settings, {("www.skool.com", "/robots.txt"): ROBOTS_OK,
+                                  ("www.skool.com", "/example-group"): httpx.Response(200, text=HTML)})
+    con.fetch_bundle(SRC, NOW)
+    out = short_summary(settings.data_dir / "public_cache")
+    assert "pageProps.postTrees" in out and "Ada" not in out and len(out.splitlines()) < 30
+    print(out)
